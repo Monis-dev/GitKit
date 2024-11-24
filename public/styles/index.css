@@ -1,0 +1,13 @@
+body{
+  margin: 0;
+  font-family: "Funnel Display", sans-serif;
+  font-size: 1rem;
+  background-image: url('/images/main.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  color: rgb(14, 28, 28);
+}
+.container{
+  background-color: aliceblue;
+}

@@ -1,0 +1,43 @@
+body{
+    margin: 0;
+    font-family: "Funnel Display", sans-serif;
+    font-size: 1rem;
+    background-image: url('/images/main.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    color: rgb(14, 28, 28);
+    
+}
+span{
+    font-family: "Sevillana", cursive;
+    font-size: 5rem;
+    color: rgb(127, 255, 150);
+    text-decoration:underline;
+}
+.container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+button{
+    border-style: none;
+    width: 30vh;
+    height: 10vh;
+    border-radius: 5vh;
+    font-size: 2rem;
+    background-color: rgba(255,255,255,.1);
+    cursor: pointer;            
+    transition: all 0.3s ease;
+}
+button:hover{
+    width: 31vh;
+    height: 11vh;
+    background-color: rgba(255,255,255,.50);
+}
+h3{
+    font-size: 1.5rem;
+}
