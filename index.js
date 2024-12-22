@@ -14,7 +14,7 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-    res.render("main.ejs"); // Render the landing page
+    res.render("login.ejs"); // Render the landing page
 });
 
 //display

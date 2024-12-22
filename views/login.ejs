@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/login.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400
+..800&family=Edu+AU+VIC+WA+NT+Pre:wght@400..700&family=Funnel+Display:
+wght@300..800&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=
+Sevillana&display=swap" rel="stylesheet">
+<link rel="stylesheet" href=
+"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <title>My Adventure</title>
+</head>
+<body>
+    <div class="container">
+        <div id="signIn_card" class="main_card">
+            <h1>Sign In</h1>
+            <p>Enter the Username and Password</p>
+            <input type="text" placeholder="Username" name="username">
+            <input type="password" placeholder="Password" name="password"></br>
+            <a href="#">Forgot your password?</a></br>
+            <a href="/home">
+                <button class="in_button">Sign In</button>
+            </a>
+        </div>
+        <div id="signUp_card" class="main_card">
+            <h1>Sign Up</h1>
+            <p>Enter your information</p>
+            <input type="text" placeholder="Username" name="username">
+            <input type="email" placeholder="Email" name="email">
+            <input type="password" placeholder="Password" name="password"></br>
+            
+            <a href="/home">
+                <button class="up_button">Sign Up</button>
+            </a>
+        </div>
+        <div class="overlay_container">
+            <div class="text_card overlay_left">
+                <h1>Hello and welcome!</h1>
+                <p>To experence the full featur of the website create your account.
+                    If you already have an account sign in
+                </p>
+                <a href="#">
+                    <button class="change_left swap">Sign In</button>
+                </a>
+            </div>
+            <div class="text_card overlay_right">
+                <h1>Welcome back</h1>
+                <p>Hope you ejoy our website.
+                    If you don't have an account create one to enjoy all the features
+                </p>
+                <a href="#">
+                    <button class="change_right swap">Sign Up</button>
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".swap").on("click", function () {
+                $(".container").toggleClass("active");
+            });
+        });
+
+    </script>
+</body>
+</html>
