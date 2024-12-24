@@ -1,15 +1,19 @@
 *{
     box-sizing: border-box;
 }
+
 body{
     align-items: center;
     display: flex;
     justify-content: center;
     flex-direction: column;
-    background-color: #f6f5f7;
     min-height: 100%;
     margin: 10%;
     font-family: "Baloo Bhaijaan 2", serif;
+    background: url("/images/john-towner-JgOeRuGD_Y4-unsplash.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    overflow: hidden;
 }
 
 .container{
@@ -17,7 +21,8 @@ body{
     width: 768px;
     max-width: 100%;
     min-height: 480px;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, .2);
+    backdrop-filter: blur(5px);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 14px 28px rgba(0,0,0,.25),
@@ -49,7 +54,8 @@ body{
 input{
     width: 80%;
     padding: .5rem;
-    border-radius: .2rem;
+    border: 0px solid;
+    border-radius: 1rem;
     box-shadow: 0 14px 28px rgba(0,0,0,.15),
                 0 10px 10px rgba(0,0,0,.01);;
     margin-top: 1rem;
@@ -66,7 +72,12 @@ button{
     padding: .7rem 1.5rem;
     margin-top: 2.5rem;
     border-radius: .5rem;
-    
+    cursor: pointer;
+}
+
+button:hover{
+    transform: scale(1.05);
+    transition: all .2s ease-in-out;
 }
 
 .text_card{
@@ -75,7 +86,7 @@ button{
     letter-spacing: 1px;
     text-align: center;
     font-size: 1.1rem;
-    background-color: rgba(248, 255, 52);
+    background-color: rgba(255, 255, 255, .2);
     transition: transform 2s ease-in-out, opacity 2s ease-in-out;
 }
     
@@ -85,15 +96,13 @@ button{
     left: 0%;
     z-index: 1;
     opacity: 0;
-    
 }
 
 .overlay_right{
     max-width: 50%;
     right: 0%;
     z-index: 2;
-    opacity: 1;
-    
+    opacity: 1;  
 }
 
 .container.active #signIn_card{
@@ -108,7 +117,6 @@ button{
     z-index: 2;
 }
 
-
 .container.active .overlay_right{
     opacity: 0;
     z-index: 1;
@@ -118,9 +126,5 @@ button{
     opacity: 1;
     z-index: 2;
 }
-
-
-
-
 
 
