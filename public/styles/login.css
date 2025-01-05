@@ -69,6 +69,8 @@ a{
 
 button{
     background-color: #f6f5f7;
+    border: 0px solid;
+    font-family: "Baloo Bhaijaan 2", serif;
     padding: .7rem 1.5rem;
     margin-top: 2.5rem;
     border-radius: .5rem;
@@ -86,8 +88,9 @@ button:hover{
     letter-spacing: 1px;
     text-align: center;
     font-size: 1.1rem;
-    background-color: rgba(255, 255, 255, .2);
+    background-color: rgb(39, 38, 39);
     transition: transform 2s ease-in-out, opacity 2s ease-in-out;
+    color: #f6f5f7;
 }
     
 
@@ -96,6 +99,7 @@ button:hover{
     left: 0%;
     z-index: 1;
     opacity: 0;
+    border-radius: 0 2rem 2rem 0;
 }
 
 .overlay_right{
@@ -103,6 +107,7 @@ button:hover{
     right: 0%;
     z-index: 2;
     opacity: 1;  
+    border-radius: 2rem 0 0  2rem;
 }
 
 .container.active #signIn_card{

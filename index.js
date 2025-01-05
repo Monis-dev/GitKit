@@ -7,6 +7,7 @@ let data = { //empty data set declear
     name : "",
     title : "",
     blog : "",
+    date : "",
 };
 const storeData  = []; //to show all the blog post
 
@@ -31,6 +32,7 @@ app.get("/add", (req, res) =>{
 app.post("/submit", (req, res) =>{
     data = { 
         id : Date.now() + Math.random(), //to have a unique identity of the blog
+        date : new Date(),
         name : req.body["name"],
         title : req.body["title"],
         blog : req.body["blog"],
