@@ -3,10 +3,14 @@
 <link rel="stylesheet" href="/styles/style.css">
 
 <%- include("partials/header.ejs") %>
-<h1>Create Blog</h1>
-<form action="/submit" method="POST">
-  <input name="name" type="text" class="feedback-input" placeholder="Name" required />
-  <input name="title" type="text" class="feedback-input" placeholder="Title" required />
-  <textarea name="blog" class="feedback-input" placeholder="Comment"></textarea>
-  <input type="submit" value="Submit" />
-</form>
+<section class="body_main">
+  <div class="main_container">
+    <h1>Create Blog</h1>
+    <form action="/submit" method="POST" class="edit_container">
+      <input name="name" type="text" class="feedback-input" placeholder="Name" required />
+      <input name="title" type="text" class="feedback-input" placeholder="Title" required />
+      <textarea name="blog" class="feedback-input" placeholder="Comment" ></textarea>
+      <button type="submit" value="Submit" class="submit-button">Submit</button>
+    </form>
+  </div>
+</section>
