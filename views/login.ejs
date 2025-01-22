@@ -17,28 +17,30 @@ Sevillana&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <div id="signIn_card" class="main_card">
-            <h1>Sign In</h1>
-            <p>Enter the Username and Password</p>
-            <input type="username" placeholder="Username" name="username" >
-            <input type="password" placeholder="Password" name="password" ></br>
-            
-            <a href="#">Forgot your password?</a></br>
-            <a href="/home">
-                <button class="in_button">Sign In</button>
-            </a>
-        </div>
-        <div id="signUp_card" class="main_card">
-            <h1>Sign Up</h1>
-            <p>Enter your information</p>
-            <input type="text" placeholder="Username" name="username">
-            <input type="email" placeholder="Email" name="email">
-            <input type="password" placeholder="Password" name="password"></br>
-            
-            <a href="/home">
-                <button class="up_button">Sign Up</button>
-            </a>
-        </div>
+        <form action="/home" method="POST">
+            <div id="signIn_card" class="main_card">
+                <h1>Sign In</h1>
+                <p>Enter the Username and Password</p>
+                <input nametype="text" placeholder="Username" name="username" >
+                <input type="password" placeholder="Password" name="password" ></br>
+                
+                <a href="#">Forgot your password?</a></br>
+                <a href="/home">
+                    <button class="in_button">Sign In</button>
+                </a>
+            </div>
+            <div id="signUp_card" class="main_card">
+                <h1>Sign Up</h1>
+                <p>Enter your information</p>
+                <input type="text" placeholder="Username" name="Username">
+                <input type="email" placeholder="Email" name="Email">
+                <input type="password" placeholder="Password" name="Password"></br>
+                
+                <a href="/home">
+                    <button class="up_button">Sign Up</button>
+                </a>
+            </div>
+        </form>
         <div class="overlay_container">
             <div class="text_card overlay_left">
                 <h1>Hello and welcome!</h1>
@@ -59,6 +61,7 @@ Sevillana&display=swap" rel="stylesheet">
                 </a>
             </div>
         </div>
+        
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>

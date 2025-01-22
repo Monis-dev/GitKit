@@ -9,19 +9,37 @@ let data = { //empty data set declear
     blog : "",
     date : "",
 };
+
+const authentication = {
+    username : "Monis",
+    password : "123",
+}
+
 const storeData  = []; //to show all the blog post
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
 app.get("/", (req, res) => {
     res.render("login.ejs"); // Render the landing page
 });
 
-//display
-app.get("/home", (req, res) =>{
-    res.render("index.ejs", {storeData}); //sending empty storeData so that it matches the condition of if storeData exsist
-});
+app.post("/home", (req, res)=>{
+    const getData = {
+        username : req.body["username"],
+        password : req.body["password"],
+    }
+    if( authentication.username === getData.username &&
+        authentication.password === getData.password){
+            res.render("index.ejs", {storeData}); //sending empty storeData so that it matches the condition of if storeData exsist
+            console.log("Working")
+    } else{
+        res.status(401).json({ alert: "Incorrect Password or Username" });
+    }
+    
+})
+
 
 //create blog page render 
 app.get("/add", (req, res) =>{ 
