@@ -10,7 +10,8 @@ let data = { //empty data set declear
     date : "",
 };
 
-const authentication = {
+
+const Userauthentication = {
     username : "Monis",
     password : "123",
 }
@@ -30,16 +31,19 @@ app.post("/home", (req, res)=>{
         username : req.body["username"],
         password : req.body["password"],
     }
-    if( authentication.username === getData.username &&
-        authentication.password === getData.password){
-            res.render("index.ejs", {storeData}); //sending empty storeData so that it matches the condition of if storeData exsist
-            console.log("Working")
+    if( Userauthentication.username === getData.username &&
+        Userauthentication.password === getData.password){
+            res.render("index.ejs", {storeData, isAuthenticated: true}); //sending empty storeData so that it matches the condition of if storeData exsist
+            
     } else{
         res.status(401).json({ alert: "Incorrect Password or Username" });
     }
     
 })
 
+app.get("/home", (req, res)=>{
+    res.render("index.ejs", {storeData, isAuthenticated: true})
+})
 
 //create blog page render 
 app.get("/add", (req, res) =>{ 
@@ -54,9 +58,9 @@ app.post("/submit", (req, res) =>{
         name : req.body["name"],
         title : req.body["title"],
         blog : req.body["blog"],
-    }
+    };
     storeData.push(data); //push array
-    res.redirect("/home")
+    res.render("index.ejs", {storeData, isAuthenticated: true});
 });
 
 //render edit page
@@ -64,7 +68,7 @@ app.get("/edit", (req, res) => {
     const {id} = req.query;  //getting the selected id by req.query 
     const foundData = storeData.find(item => item.id === Number(id)); //finding the matching id from storeData also using Number(id) 
     if (foundData) {                                                  //is to convert the id in numerice form because we are checking the data type(===)
-        res.render("edit.ejs", { data: foundData });  //data: foundData sending the entire data that matches the data in storeData
+        res.render("edit.ejs", { data: foundData, isAuthenticated: true });  //data: foundData sending the entire data that matches the data in storeData
     } else {
         res.status(404).send("Blog not found");
     }
@@ -77,7 +81,7 @@ app.post("/submit-edit", (req, res) =>{
         foundIndex.name = name; //assignening the new values 
         foundIndex.title = title;
         foundIndex.blog = blog;
-        res.redirect("/home")
+        res.render("index.ejs", {storeData, isAuthenticated: true});
     } else{
         res.status(404).send("Unable to update blog");
     }
@@ -89,7 +93,7 @@ app.post("/delete", (req, res) =>{
     const foundId = storeData.findIndex(index => index.id === Number(id));
     if(foundId){
         storeData.splice(foundId, 1); //splice is just remove it the second value is to ensure to remove only one data
-        res.redirect("/home")
+        res.render("index.ejs", {storeData, isAuthenticated: true});   
     } else{
         res.status(404).send("Unable to remove the blog");
     }

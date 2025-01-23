@@ -33,7 +33,7 @@ body{
     margin-left: 0.5rem; 
 }
 
-form{
+.main_container form{
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -69,4 +69,5 @@ input, textarea{
 textarea{
     height: 15rem;
     padding: 0 1.5rem 1rem 0; 
+    resize: none;
 }
