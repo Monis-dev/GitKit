@@ -16,7 +16,7 @@ Sevillana&display=swap"
   <%- include("partials/header.ejs") %>
   <section class="body_main">
         <div class="main_container">
-            <% if(isAuthenticated){ %> 
+            <% if(isAuthenticated === true){ %> 
                 <% if (storeData.length > 0) { %>
                 <ul>
                     <% storeData.forEach(data => { %>
