@@ -20,7 +20,7 @@ const storeData  = []; //to show all the blog post
 
 function checkAuthentication(req, res, next) {
     if (isAuthenticated) {
-        next(); // User is authenticated, proceed to the next middleware or route
+        next(); // User is authenticated, proceed to the next route
     } else {
         res.redirect('/'); // User is not authenticated, redirect to login page
     }
