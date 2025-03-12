@@ -23,11 +23,13 @@ app.get("/home", (req, res) =>{
     res.render("index.ejs", {storeData}); //sending empty storeData so that it matches the condition of if storeData exsist
 });
 
+//server side
 //create blog page render 
 app.get("/add", (req, res) =>{ 
     res.render("add.ejs")
 });
 
+//client side
 //taking values
 app.post("/submit", (req, res) =>{
     data = { 
@@ -41,6 +43,7 @@ app.post("/submit", (req, res) =>{
     res.redirect("/home")
 });
 
+//server side
 //render edit page
 app.get("/edit", (req, res) => {
     const {id} = req.query;  //getting the selected id by req.query 
@@ -51,6 +54,9 @@ app.get("/edit", (req, res) => {
         res.status(404).send("Blog not found");
     }
 });
+
+//patch and delete are done in client side but intiaited in server side
+//client side
 //display new blog
 app.post("/submit-edit", (req, res) =>{
     const {id, name, title, blog} = req.body; //req.body is to send the data to the index page 
@@ -65,6 +71,7 @@ app.post("/submit-edit", (req, res) =>{
     }
     
 });
+        
 // delete the blog
 app.post("/delete", (req, res) =>{
     const {id} = req.body;
