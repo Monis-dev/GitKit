@@ -42,7 +42,7 @@ app.patch("/home/:id", (req, res) =>{
     
 });
 
-app.post("/home/:id", (req, res) =>{
+app.delete("/home/:id", (req, res) =>{
     const foundId = storeData.findIndex(index => index.id === parseInt(req.params.id));
     if(foundId != -1){
         storeData.splice(foundId, 1); //splice is just remove it the second value is to ensure to remove only one data
