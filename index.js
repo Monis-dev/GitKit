@@ -14,6 +14,7 @@ const storeData  = []; //to show all the blog post
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.get("/home", (req, res) =>{
     res.json(storeData); 
@@ -23,13 +24,13 @@ app.post("/add", (req, res) =>{
     data = { 
         id : Date.now() + Math.random(), //to have a unique identity of the blog
         date : new Date(),
-        name : req.body["name"],
-        title : req.body["title"],
-        blog : req.body["blog"],
+        name : req.body.name,
+        title : req.body.title,
+        blog : req.body.blog,
     }
     storeData.push(data); //push array
-    console.log(data)
-    res.sendStatus(202).json(data);
+    console.log("data",data)
+    res.status(202).json(data);
 });
 
 // app.patch("/home/:id", (req, res) =>{

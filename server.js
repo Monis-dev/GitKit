@@ -15,7 +15,7 @@ app.get("/", async(req, res) =>{
     try {
         const response = await axios.get(`${API_URL}/home`)
         console.log(response.data)
-        res.render("index.ejs", {storeData: response})
+        res.render("index.ejs", {storeData: response.data})
     } catch (error) {
         res.status(500).json({ message: "Error fetching posts" });
     }
@@ -27,7 +27,13 @@ app.get("/add", (req, res) =>{
 
 app.post("/api/home", async(req, res) =>{
     try {
-        const response = await axios.post(`${API_URL}/add`, req.body)
+        const {name, title, blog} = req.body;
+        const response = await axios.post(`${API_URL}/add`,{
+            name: name,
+            title: title, 
+            blog: blog,
+        })
+        console.log(response)
         res.redirect("/");
     } catch (error) {
         res.status(404).json({ message: "Error loading home page" });
