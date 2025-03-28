@@ -7,8 +7,8 @@
     <%- include("partials/header.ejs") %>
     <div class="main_container">
         <h1>Edit Blog</h1>
-        <form action="/submit-edit" method="POST">
-            <input type="hidden" name="id" value="<%= data.id %>" />
+        <form action="/api/home/<%=data.id%>" method="POST">
+            <!-- <input type="hidden" name="id" value="<%= data.id %>" /> -->
             <input name="name" type="text" placeholder="Name" value="<%= data.name %>" />
             <input name="title" type="text" placeholder="Title" value="<%= data.title %>" />
             <textarea name="blog" placeholder="Blog content"><%= data.blog %></textarea>
