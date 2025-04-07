@@ -2,8 +2,9 @@ import express from "express";
 import bodyParser from "body-parser";
 
 const app = express();
-const port = 3000;
+const port = 4000;
 let data = { //empty data set declear
+    id: "",
     name : "",
     title : "",
     blog : "",
@@ -13,70 +14,55 @@ const storeData  = []; //to show all the blog post
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-app.get("/", (req, res) => {
-    res.render("login.ejs"); // Render the landing page
-});
-
-//display
 app.get("/home", (req, res) =>{
-    res.render("index.ejs", {storeData}); //sending empty storeData so that it matches the condition of if storeData exsist
+    res.json(storeData); 
 });
 
-//create blog page render 
-app.get("/add", (req, res) =>{ 
-    res.render("add.ejs")
+app.get("/home/:id", (req, res) =>{
+    const Foundpost = storeData.find( post => post.id === Number(req.params.id));
+    if(!Foundpost){
+      res.status(404).json({
+        error: 'Id not found'
+      })
+    } res.json(Foundpost);
 });
 
-//taking values
-app.post("/submit", (req, res) =>{
+app.post("/add", (req, res) =>{
     data = { 
         id : Date.now() + Math.random(), //to have a unique identity of the blog
         date : new Date(),
-        name : req.body["name"],
-        title : req.body["title"],
-        blog : req.body["blog"],
+        name : req.body.name,
+        title : req.body.title,
+        blog : req.body.blog,
     }
     storeData.push(data); //push array
-    res.redirect("/home")
+    res.status(202).json(data);
 });
 
-//render edit page
-app.get("/edit", (req, res) => {
-    const {id} = req.query;  //getting the selected id by req.query 
-    const foundData = storeData.find(item => item.id === Number(id)); //finding the matching id from storeData also using Number(id) 
-    if (foundData) {                                                  //is to convert the id in numerice form because we are checking the data type(===)
-        res.render("edit.ejs", { data: foundData });  //data: foundData sending the entire data that matches the data in storeData
-    } else {
-        res.status(404).send("Blog not found");
-    }
-});
-//display new blog
-app.post("/submit-edit", (req, res) =>{
-    const {id, name, title, blog} = req.body; //req.body is to send the data to the index page 
-    const foundIndex = storeData.find(index => index.id === Number(id));//this foundIndex is the part that hold the values of the founded id in storeData
-    if(foundIndex){                                                     //so when we change it, it makes the changes in the storeData array
-        foundIndex.name = name; //assignening the new values 
-        foundIndex.title = title;
-        foundIndex.blog = blog;
-        res.redirect("/home")
-    } else{
-        res.status(404).send("Unable to update blog");
-    }
+app.patch("/home/:id", (req, res) =>{
+    const post = storeData.find(index => index.id === Number(req.params.id));
+    console.log(post);
+    if(!post){return res.status(404).json({ message: "Error loading home page" });}
+
+    if(req.body.name) post.name = req.body.name;
+    if(req.body.blog) post.blog = req.body.blog;
+    if(req.body.title) post.title = req.body.title;
     
+    res.json(post);
 });
-// delete the blog
-app.post("/delete", (req, res) =>{
-    const {id} = req.body;
-    const foundId = storeData.findIndex(index => index.id === Number(id));
-    if(foundId){
+
+app.delete("/home/:id", (req, res) =>{
+    const foundId = storeData.find(index => index.id === Number(req.params.id));
+    if(foundId != -1){
         storeData.splice(foundId, 1); //splice is just remove it the second value is to ensure to remove only one data
-        res.redirect("/home")
+        res.json("Post deleted");
     } else{
         res.status(404).send("Unable to remove the blog");
     }
 });
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`API is running at http://localhost:${port}`);
   });
