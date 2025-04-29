@@ -16,9 +16,11 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+
 app.get("/home", (req, res) =>{
     res.json(storeData); 
 });
+
 
 app.get("/home/:id", (req, res) =>{
     const Foundpost = storeData.find( post => post.id === Number(req.params.id));
