@@ -1,125 +1,85 @@
 import express from "express";
 import bodyParser from "body-parser";
-import axios from "axios";
-import session from 'express-session';
+import pg from "pg";
+import env from "dotenv";
 
 const app = express();
+const port = 4000;
+env.config();
 
-const port = 3000;
-const API_URL = "http://localhost:4000";
+let data = {
+  //empty data set declear
+  id: "",
+  name: "",
+  title: "",
+  blog: "",
+  date: "",
+};
+const storeData = []; //to show all the blog post
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use(session({
-    secret: 'User_session_MAKE_THIS_MORE_SECRET', 
-    resave: false, 
-    saveUninitialized: false, 
-    cookie: { secure: false } 
-}));
+const db = new pg.Client({
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: process.env.PG_PORT,
+});
+db.connect();
 
-
-const Userauthentication = {
-    username : "Monis",
-    password : "123",
-};
-
-function checkAuthenticated(req, res, next){
-    console.log(`CheckAuth: req.session.isAuthenticated is currently ${req.session.isAuthenticated}`);
-    if(req.session && req.session.isAuthenticated){
-        console.log("Authenication successful path taken");
-        return next();
-    } else {
-        console.log("Check function failed - redirecting to /");
-        res.redirect("/");
-    }
-};
- 
-app.get("/", (req, res) =>{
-    res.render("login.ejs");
-}); 
-
-app.post("/login", (req, res) =>{
-    const getData = {
-        username : req.body["username"],
-        password : req.body["password"],
-    }
-
-    if(Userauthentication.username === getData.username &&
-        Userauthentication.password === getData.password){
-
-        req.session.isAuthenticated = true;
-        console.log("Login Successful");
-        res.redirect("/home");
-
-    } else {
-        console.log("login failed");
-        res.redirect("/");
-    }
-})
-
-
-//get home page
-app.get("/home", checkAuthenticated, async(req, res) =>{
-    try {
-        const response = await axios.get(`${API_URL}/home`)
-        res.render("index.ejs", {storeData: response.data})
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching posts" });
-    }
-})
-
-//render add page
-app.get("/add", checkAuthenticated, (req, res) =>{
-    res.render("modify.ejs")
+app.get("/home", (req, res) => {
+  res.json(storeData);
 });
 
-//upload data
-app.post("/api/home", checkAuthenticated, async(req, res) =>{
-    try {
-        const {name, title, blog} = req.body;
-        const response = await axios.post(`${API_URL}/add`,{
-            name: name,
-            title: title, 
-            blog: blog,
-        });
-        res.redirect("/home");
-    } catch (error) {
-        res.status(404).json({ message: "Error loading home page" });
-    }
+app.get("/home/:id", (req, res) => {
+  const Foundpost = storeData.find((post) => post.id === Number(req.params.id));
+  if (!Foundpost) {
+    res.status(404).json({
+      error: "Id not found",
+    });
+  }
+  res.json(Foundpost);
 });
 
-//render edit page
-
-app.get("/edit/:id",checkAuthenticated, async(req, res) =>{
-    try {
-        const response = await axios.get(`${API_URL}/home/${Number(req.params.id)}`);
-        res.render("modify.ejs",{data: response.data})
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching post" });
-    }
+app.post("/add", (req, res) => {
+  data = {
+    id: Date.now() + Math.random(), //to have a unique identity of the blog
+    date: new Date(),
+    name: req.body.name,
+    title: req.body.title,
+    blog: req.body.blog,
+  };
+  storeData.push(data); //push array
+  res.status(202).json(data);
 });
 
-app.post("/api/home/:id", checkAuthenticated, async(req, res) =>{
-    try {
-        const response = await axios.patch(`${API_URL}/home/${Number(req.params.id)}`, req.body );
-        res.redirect("/home");
-    } catch (error) {
-        res.status(404).json({ message: "Error loading Edited home page" });
-    }
+app.patch("/home/:id", (req, res) => {
+  const post = storeData.find((index) => index.id === Number(req.params.id));
+  console.log(post);
+  if (!post) {
+    return res.status(404).json({ message: "Error loading home page" });
+  }
+
+  if (req.body.name) post.name = req.body.name;
+  if (req.body.blog) post.blog = req.body.blog;
+  if (req.body.title) post.title = req.body.title;
+
+  res.json(post);
 });
 
-app.get("/delete/:id", checkAuthenticated, async (req, res) =>{
-    try {
-        await axios.delete(`${API_URL}/home/${Number(req.params.id)}`);
-        res.redirect("/home");
-    } catch (error) {
-        res.status(404).json({ message: "Unable to delete the blog!" });
-    }
+app.delete("/home/:id", (req, res) => {
+  const foundId = storeData.find((index) => index.id === Number(req.params.id));
+  if (foundId != -1) {
+    storeData.splice(foundId, 1); //splice is just remove it the second value is to ensure to remove only one data
+    res.json("Post deleted");
+  } else {
+    res.status(404).send("Unable to remove the blog");
+  }
 });
-
 
 app.listen(port, () => {
-    console.log(`API is running at http://localhost:${port}`);
+  console.log(`API is running at http://localhost:${port}`);
 });
