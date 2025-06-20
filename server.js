@@ -30,6 +30,26 @@ const db = new pg.Client({
 });
 db.connect();
 
+app.post("/api/signup", async (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  const email = req.body.email;
+  try {
+    await db.query("INSERT INTO users (username, password, email) VALUES ($1, $2, $3)", [
+      username,
+      password,
+      email
+    ]);
+    console.log("User sign up successful");
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.post("/api/login", async(req, res) =>{
+  const result = await db.query("SELECT ")
+})
+
 app.get("/home", (req, res) => {
   res.json(storeData);
 });

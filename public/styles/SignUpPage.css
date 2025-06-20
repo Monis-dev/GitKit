@@ -1,0 +1,83 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  background-color: rgb(36, 12, 46);
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  position: relative;
+}
+
+.signup-card {
+  height: 600px;
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: rgb(0, 0, 0);
+}
+
+.signup-card {
+  background: rgba(167, 167, 167, 0.5); /* Semi-transparent white */
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.signup-form {
+  width: 350px;
+  max-width: 90%;
+  padding-top: 10px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 1rem;
+  border: 1px solid;
+  border-radius: 1rem;
+}
+
+.signup-form label {
+  margin-left: 5%;
+}
+.submit-button {
+  text-align: center;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 1rem;
+  border: 0px;
+  border-radius: 2rem;
+}
+
+.back-button {
+  border: 1px solid rgb(190, 190, 190);
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+.img-card {
+  position: absolute;
+  z-index: -1;
+}
+
+img {
+  width: 50%;
+  margin-left: 10%;
+}

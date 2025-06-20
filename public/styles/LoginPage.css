@@ -1,0 +1,100 @@
+* {
+  margin: 0%;
+  padding: 0%;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.login-card {
+  height: 600px;
+  width: 900px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid;
+}
+
+
+.login-form {
+  width: 350px;
+  max-width: 90%;
+  padding-top: 10px;
+  margin-bottom: 20px;
+}
+
+.login-form label{
+  margin-left: 5%;
+}
+
+input {
+  padding: 1rem;
+  border: 1px solid;
+  border-radius: 1rem;
+}
+
+.submit-button {
+  /* this is the div*/
+  text-align: center;
+}
+.btn-primary {
+  /* and this is the element inside 
+  the div so even if i try to apply width 100% it 
+  would not increase the size as it only increse the div size*/
+  width: 100%;
+  padding: 1rem;
+  border: 0px;
+  border-radius: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group input {
+  width: 100%;
+}
+
+.social-login{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+h4 {
+  width:35%;
+  text-align: center;
+  border-bottom: 1px solid #000;
+  line-height: 0.1em;
+  margin: 10px 0 20px;
+  padding-top: 10px;
+}
+
+h4 span { 
+  background:#fff; 
+  padding:0 10px; 
+}
+
+.social-icon{
+  border: 1px solid rgb(223, 223, 224);
+  border-radius: 5px;
+  padding: 2px;
+}
+
+img{
+  width: 3rem;
+}
+
+.signup-link{
+  padding-top: 10px;
+}

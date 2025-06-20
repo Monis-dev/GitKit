@@ -47,27 +47,34 @@ function checkAuthenticated(req, res, next) {
 }
 
 app.get("/", (req, res) => {
-  res.render("login.ejs");
+  res.render("loginPage.ejs");
 });
 
-app.post("/login", (req, res) => {
+app.get("/signup", (req, res) => {
+  res.render("SignUpPage.ejs");
+});
+
+app.get("/login", (req, res) => {
+  res.redirect("/");
+});
+
+app.post("/signup", async (req, res) => {
   const getData = {
     username: req.body["username"],
     password: req.body["password"],
+    email: req.body["email"],
   };
-
-  if (
-    Userauthentication.username === getData.username &&
-    Userauthentication.password === getData.password
-  ) {
-    req.session.isAuthenticated = true;
+  try {
+    await axios.post(`${API_URL}/api/signup`, getData);
     console.log("Login Successful");
-    res.redirect("/home");
-  } else {
-    console.log("login failed");
-    res.redirect("/");
+  } catch (error) {
+    console.log(error);
   }
 });
+
+app.post("/login", async(req, res) =>{
+  
+})
 
 //get home page
 app.get("/home", checkAuthenticated, async (req, res) => {
