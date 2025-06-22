@@ -2,9 +2,11 @@ import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
 import env from "dotenv";
+import bcrypt, { hash } from "bcrypt";
 
 const app = express();
 const port = 4000;
+const saltRounds = 10;
 env.config();
 
 let data = {
@@ -39,12 +41,18 @@ app.post("/api/signup", async (req, res) => {
       username,
     ]);
     if (result.rows.length == 0) {
-      await db.query(
-        "INSERT INTO users (username, password, email) VALUES ($1, $2, $3)",
-        [username, password, email]
-      );
-      console.log("User sign up successful");
-      res.status(201).json({ message: "Signup successful" });
+      bcrypt.hash(password, saltRounds, async (err, hash) => {
+        if (err) {
+          console.log(err);
+        } else {
+          await db.query(
+            "INSERT INTO users (username, password, email) VALUES ($1, $2, $3)",
+            [username, hash, email]
+          );
+          console.log("User sign up successful");
+          res.status(201).json({ message: "Signup successful" });
+        }
+      });
     } else {
       res.status(409).json({ message: "User already exist" });
     }
@@ -56,7 +64,7 @@ app.post("/api/signup", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   const username = req.body.username;
-  const password = req.body.password;
+  const loginPassword = req.body.password;
   try {
     const result = await db.query("SELECT * FROM users WHERE username = $1", [
       username,
@@ -64,11 +72,17 @@ app.post("/api/login", async (req, res) => {
     if (result.rows.length != 0) {
       const user = result.rows[0];
       const storePassword = user.password;
-      if (password == storePassword) {
-        res.status(200).json({ message: "Signup successful" });
-      } else {
-        res.status(401).json({ message: "Username or password is wrong!" });
-      }
+      bcrypt.compare(loginPassword, storePassword, (err, result) => {
+        if (err) {
+          console.log(err);
+        } else {
+          if (result) {
+            res.status(200).json({ message: "Signup successful" });
+          } else {
+            res.status(401).json({ message: "Username or password is wrong!" });
+          }
+        }
+      });
     } else {
       res.status(401).json({ message: "User does not exist" });
     }
