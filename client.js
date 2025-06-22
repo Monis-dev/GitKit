@@ -19,35 +19,9 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
-  })
-);
-
-const Userauthentication = {
-  username: "Monis",
-  password: "123",
-};
-
-function checkAuthenticated(req, res, next) {
-  console.log(
-    `CheckAuth: req.session.isAuthenticated is currently ${req.session.isAuthenticated}`
-  );
-  if (req.session && req.session.isAuthenticated) {
-    console.log("Authenication successful path taken");
-    return next();
-  } else {
-    console.log("Check function failed - redirecting to /");
-    res.redirect("/");
-  }
-}
 
 app.get("/", (req, res) => {
-  res.render("loginPage.ejs");
+  res.render("loginPage.ejs", { loginError: null });
 });
 
 app.get("/signup", (req, res) => {
@@ -66,18 +40,30 @@ app.post("/signup", async (req, res) => {
   };
   try {
     await axios.post(`${API_URL}/api/signup`, getData);
+    res.redirect("/");
     console.log("Login Successful");
   } catch (error) {
     console.log(error);
   }
 });
 
-app.post("/login", async(req, res) =>{
-  
-})
+app.post("/login", async (req, res) => {
+  const getData = {
+    username: req.body["username"],
+    password: req.body["password"],
+  };
+  try {
+    await axios.post(`${API_URL}/api/login`, getData);
+    res.redirect("/home");
+    console.log("Login successful")
+  } catch (error) {
+    res.render("loginPage.ejs", {loginError: true})
+    console.log(error);
+  }
+});
 
 //get home page
-app.get("/home", checkAuthenticated, async (req, res) => {
+app.get("/home", async (req, res) => {
   try {
     const response = await axios.get(`${API_URL}/home`);
     res.render("index.ejs", { storeData: response.data });
@@ -87,12 +73,12 @@ app.get("/home", checkAuthenticated, async (req, res) => {
 });
 
 //render add page
-app.get("/add", checkAuthenticated, (req, res) => {
+app.get("/add", (req, res) => {
   res.render("modify.ejs");
 });
 
 //upload data
-app.post("/api/home", checkAuthenticated, async (req, res) => {
+app.post("/api/home", async (req, res) => {
   try {
     const { name, title, blog } = req.body;
     const response = await axios.post(`${API_URL}/add`, {
@@ -108,7 +94,7 @@ app.post("/api/home", checkAuthenticated, async (req, res) => {
 
 //render edit page
 
-app.get("/edit/:id", checkAuthenticated, async (req, res) => {
+app.get("/edit/:id", async (req, res) => {
   try {
     const response = await axios.get(
       `${API_URL}/home/${Number(req.params.id)}`
@@ -119,7 +105,7 @@ app.get("/edit/:id", checkAuthenticated, async (req, res) => {
   }
 });
 
-app.post("/api/home/:id", checkAuthenticated, async (req, res) => {
+app.post("/api/home/:id", async (req, res) => {
   try {
     const response = await axios.patch(
       `${API_URL}/home/${Number(req.params.id)}`,
@@ -131,7 +117,7 @@ app.post("/api/home/:id", checkAuthenticated, async (req, res) => {
   }
 });
 
-app.get("/delete/:id", checkAuthenticated, async (req, res) => {
+app.get("/delete/:id", async (req, res) => {
   try {
     await axios.delete(`${API_URL}/home/${Number(req.params.id)}`);
     res.redirect("/home");

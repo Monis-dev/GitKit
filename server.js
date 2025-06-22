@@ -35,20 +35,48 @@ app.post("/api/signup", async (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
   try {
-    await db.query("INSERT INTO users (username, password, email) VALUES ($1, $2, $3)", [
+    const result = await db.query("SELECT * FROM users WHERE username = $1", [
       username,
-      password,
-      email
     ]);
-    console.log("User sign up successful");
+    if (result.rows.length == 0) {
+      await db.query(
+        "INSERT INTO users (username, password, email) VALUES ($1, $2, $3)",
+        [username, password, email]
+      );
+      console.log("User sign up successful");
+      res.status(201).json({ message: "Signup successful" });
+    } else {
+      res.status(409).json({ message: "User already exist" });
+    }
   } catch (error) {
     console.log(error);
+    res.status(505).json({ message: "Internal server error" });
   }
 });
 
-app.post("/api/login", async(req, res) =>{
-  const result = await db.query("SELECT ")
-})
+app.post("/api/login", async (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  try {
+    const result = await db.query("SELECT * FROM users WHERE username = $1", [
+      username,
+    ]);
+    if (result.rows.length != 0) {
+      const user = result.rows[0];
+      const storePassword = user.password;
+      if (password == storePassword) {
+        res.status(200).json({ message: "Signup successful" });
+      } else {
+        res.status(401).json({ message: "Username or password is wrong!" });
+      }
+    } else {
+      res.status(401).json({ message: "User does not exist" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(505).json({ message: "Internal server error" });
+  }
+});
 
 app.get("/home", (req, res) => {
   res.json(storeData);
