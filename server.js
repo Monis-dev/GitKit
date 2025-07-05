@@ -133,12 +133,16 @@ app.patch("/home/:id", (req, res) => {
 });
 
 app.delete("/home/:id", (req, res) => {
-  const foundId = storeData.find((index) => index.id === Number(req.params.id));
-  if (foundId != -1) {
-    storeData.splice(foundId, 1); //splice is just remove it the second value is to ensure to remove only one data
-    res.json("Post deleted");
+  const idToDelete = Number(req.params.id);
+  const indexToDelete = storeData.findIndex((item) => item.id === idToDelete);
+
+  if (indexToDelete > -1) {
+    storeData.splice(indexToDelete, 1);
+    console.log(`Successfully deleted item at index: ${indexToDelete}`);
+    res.json({ message: "Post deleted successfully" });
   } else {
-    res.status(404).send("Unable to remove the blog");
+    console.log(`Could not find item with ID: ${idToDelete} to delete.`);
+    res.status(404).json({ message: "Unable to find the post to delete" });
   }
 });
 
