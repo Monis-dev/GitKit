@@ -1,59 +1,75 @@
-*{
-  margin: 0%;
-  padding: 0%;
+* {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
-body{
-  overflow: hidden;
-  font-family: "Funnel Display", sans-serif;
+
+body {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
   font-size: 1rem;
-  background-image: url('/images/main.jpg');
-  background-size: cover;
-  background-position: center;
-  color: rgb(14, 28, 28);
-}
-.body_main{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100vh;
-  
-}
-.main_container{
-  height: 100%;
-  width: 60%;
-  background-color: aliceblue;
-  font-family: "Baloo Bhaijaan 2", serif;
-  border-bottom: 1px solid #eee;
+  line-height: 1.6;
+  background-color: #f0f2f5;
+  color: #1c1e21;
 }
 
-.main_container > *{
-  margin-top: 1.5rem;
+.app-layout {
+  display: flex;
 }
 
-.options{
-  display: flex;
-  flex-direction: row-reverse;
-  gap: 1.5rem;
+.main-content {
+  height: 100vh; /* Takes up the full viewport height */
+  overflow-y: auto; /* Makes ONLY this section scrollable, not the whole page */
+  padding: 2rem; /* Adds some space around the content inside */
+}
+
+.projects-container {
+  max-width: 100%; /* A max-width for readability on large screens */
+  margin: 0 auto; /* Centers the container within the main-content section */
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 ul {
   list-style-type: none;
 }
 
-.main_container li {
-  border-bottom: 1px solid #a4d6d9;
-  
+.projects-container li {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-p{
-  font-size: large;
+.projects-container a {
+  text-decoration: none;
+  color: #0d1117;
 }
 
-button{
-  border: 0cap;
-  padding: 0.5rem;
-  background-color: rgba(201, 235, 246, 0.449);
-  box-shadow: 0 14px 28px rgba(0,0,0,.15),
-                0 10px 10px rgba(0,0,0,.01);;
+li:hover {
+  box-shadow: 0 20px 20px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
+
+.project-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+.project-item {
+  padding: 1.5rem 2rem; /* More horizontal padding */
+  border-bottom: 1px solid #e9ecef;
+}
+
+.project-item:last-child {
+  border-bottom: none;
+}
+
+h3 {
+  margin-bottom: 0.5rem;
+  color: #0d1117;
+}
+
+p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
