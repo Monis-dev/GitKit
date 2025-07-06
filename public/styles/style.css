@@ -1,16 +1,17 @@
 * {
-  margin: 0%;
-  padding: 0%;
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
+
 body {
-  overflow: hidden;
-  font-family: "Funnel Display", sans-serif;
-  background-image: url("/images/main.jpg");
-  background-size: cover;
-  background-position: center;
-  color: rgb(14, 28, 28);
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  background-color: #3f3c6d; 
+  color: #f0f2f5;   overflow: hidden;
 }
+
 .body_main {
   display: flex;
   flex-direction: column;

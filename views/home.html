@@ -10,124 +10,132 @@
       integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
       crossorigin="anonymous"
     />
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
-      crossorigin="anonymous"
-    ></script>
-    <style>
-      body {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      }
-    </style>
   </head>
   <body>
-    <div
-      class="d-flex flex-column flex-shrink-0 bg-body-tertiary"
-      style="width: 4.5rem; height: 100vh"
+    <main
+      class="main-content d-flex flex-column justify-content-center align-items-center mt-5"
     >
-      <a
-        href="/"
-        class="d-block p-3 link-body-emphasis text-decoration-none"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
-        data-bs-original-title="Icon-only"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="40"
-          height="32"
-          fill="currentColor"
-          class="bi bi-journal"
-          viewBox="0 0 16 16"
-        >
-          <path
-            d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"
-          />
-          <path
-            d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"
-          />
-        </svg>
-        <span class="visually-hidden">Icon-only</span>
-      </a>
-      <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
-        <li class="nav-item">
-          <a
-            href="#"
-            class="nav-link active py-3 border-bottom rounded-0"
-            aria-current="page"
-            data-bs-toggle="tooltip"
-            data-bs-placement="right"
-            aria-label="Home"
-            data-bs-original-title="Home"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              class="bi bi-house"
-              viewBox="0 0 16 16"
+      <h1 class="mb-5">Project</h1>
+      <form action="/api/home" method="POST" class="edit_container">
+        <div class="form-content d-flex flex-column">
+          <div class="name-panel d-flex flex-column mb-3">
+            <label for="name">By:</label>
+            <input
+              type="username"
+              name="username"
+              value=""
+              required
+              class="rounded-1"
+            />
+          </div>
+          <div class="title-panel d-flex flex-column mb-3">
+            <label for="title">Title</label>
+            <input
+              type="text"
+              name="title"
+              value=""
+              required
+              class="rounded-1"
+            />
+          </div>
+          <div class="date-panel">
+            <h3>Project duration</h3>
+            <div class="label-content">
+              <label for="text" class="me-5">Starting</label>
+              <label for="text">Ending</label>
+            </div>
+            <div class="input-content">
+              <input type="date" value="" class="rounded-2" />
+              <input type="date" name="date" value="" class="rounded-2" />
+            </div>
+          </div>
+          <div class="discription-panle d-flex flex-column mt-4">
+            <label for="text">Project discription</label>
+            <textarea
+              name="about"
+              rows="12"
+              cols="60"
+              style="overflow: auto; border-radius: 0.5rem"
+            ></textarea>
+          </div>
+
+          <div class="img-panel mt-4 rounded-3" style="border: 1px solid">
+           
+            <div class="img-content" style="height: 100px; width: 100%">
+              <img
+                id="imagePreview"
+                src=""
+                alt="Image Preview"
+                style="
+                  width: 100%;
+                  height: 100%;
+                  display: none;
+                  object-fit: contain;
+                "
+              />
+            </div>
+
+            <div
+              class="default-content d-flex flex-column align-items-center mb-4"
             >
-              <path
-                d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="50"
+                height="50"
+                fill="currentColor"
+                class="bi bi-cloud-plus"
+                id="upload-icon"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8 5.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 .5-.5"
+                />
+                <path
+                  d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383m.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"
+                />
+              </svg>
+              <input
+                type="file"
+                name="image"
+                id="imageInput"
+                accept=".jpg, .jpeg, .png"
+                class="d-flex ms-5"
               />
-            </svg>
+            </div>
+          </div>
+        </div>
+        <div class="d-grid gap-2 d-sm-flex mb-3 mt-3 button-group">
+          <a href="#">
+            <button type="button" class="btn btn-primary btn-lg px-4 gap-3">
+              Update
+            </button>
           </a>
-        </li>
-        <li>
-          <a
-            href="#"
-            class="nav-link py-3 border-bottom rounded-0"
-            data-bs-toggle="tooltip"
-            data-bs-placement="right"
-            aria-label="Dashboard"
-            data-bs-original-title="Dashboard"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              class="bi bi-plus-square"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"
-              />
-              <path
-                d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
-              />
-            </svg>
+          <a href="/delete">
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4">
+              Delete
+            </button>
           </a>
-        </li>
-      </ul>
-      <div class="dropdown border-top">
-        <a
-          href="#"
-          class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        >
-          <img
-            src="https://github.com/mdo.png"
-            alt="mdo"
-            width="24"
-            height="24"
-            class="rounded-circle"
-          />
-        </a>
-        <ul class="dropdown-menu text-small shadow" style="">
-          <li><a class="dropdown-item" href="#">Settings</a></li>
-          <li><a class="dropdown-item" href="#">Profile</a></li>
-          <li><hr class="dropdown-divider" /></li>
-          <li><a class="dropdown-item" href="#">Sign out</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="d-flex flex-column  align-items-center">
-      <h1>Home</h1>
-    </div>
+        </div>
+      </form>
+    </main>
+    <script>
+      const imageInput = document.getElementById("imageInput");
+      const imagePreview = document.getElementById("imagePreview");
+      const svgUpload = document.getElementById("upload-icon");
+
+      imageInput.addEventListener("change", () => {
+        const file = imageInput.files[0];
+        if (file) {
+          svgUpload.classList.add("d-none");
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = "block"; // Show the image element
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    </script>
   </body>
 </html>

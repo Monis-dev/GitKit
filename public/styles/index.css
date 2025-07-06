@@ -87,3 +87,7 @@ body {
   font-size: 0.85rem;
   color: #ffffff;
 }
+
+.sidebar-nav .nav-link.active {
+  background-color: grey;
+}
