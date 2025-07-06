@@ -14,6 +14,7 @@
   <body>
     <main
       class="main-content d-flex flex-column justify-content-center align-items-center mt-5"
+      style="position: relative"
     >
       <h1 class="mb-5">Project</h1>
       <form action="/api/home" method="POST" class="edit_container">
@@ -60,23 +61,9 @@
           </div>
 
           <div class="img-panel mt-4 rounded-3" style="border: 1px solid">
-           
-            <div class="img-content" style="height: 100px; width: 100%">
-              <img
-                id="imagePreview"
-                src=""
-                alt="Image Preview"
-                style="
-                  width: 100%;
-                  height: 100%;
-                  display: none;
-                  object-fit: contain;
-                "
-              />
-            </div>
-
             <div
-              class="default-content d-flex flex-column align-items-center mb-4"
+              class="default-content d-flex flex-column align-items-center mb-4 mt-4"
+              id="upload-prompt"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -103,6 +90,14 @@
                 class="d-flex ms-5"
               />
             </div>
+            <div
+              class="d-none d-flex flex-column justify-content-center align-items-center mt-4 mb-4"
+              id="file-feedback"
+            >
+              <h4>File name:</h4>
+              <p id="fileName">Upload file</p>
+              <button id="viewImgBtn">View image</button>
+            </div>
           </div>
         </div>
         <div class="d-grid gap-2 d-sm-flex mb-3 mt-3 button-group">
@@ -119,22 +114,68 @@
         </div>
       </form>
     </main>
+    <div class="modal modal fade" tabindex="-1" role="dialog" id="imageModal">
+      <div class="modal-dialog">
+        <div class="modal-content rounded-4 shadow">
+          <div class="modal-header border-bottom-0">
+            <h1 class="modal-title fs-5">Image Preview</h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body py-0">
+            <img
+              src=""
+              alt=""
+              id="modalImagePreview"
+              style="max-width: 100%; height: auto"
+            />
+          </div>
+          <div
+            class="modal-footer flex-column align-items-stretch w-100 gap-2 pb-3 border-top-0"
+          >
+            <button
+              type="button"
+              class="btn btn-lg btn-primary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
       const imageInput = document.getElementById("imageInput");
-      const imagePreview = document.getElementById("imagePreview");
-      const svgUpload = document.getElementById("upload-icon");
+      const uploadPrompt = document.getElementById("upload-prompt");
+      const fileFeedback = document.getElementById("file-feedback");
+      const fileName = document.getElementById("fileName");
+      const imageBtn = document.getElementById("viewImgBtn");
+      const imageModalPreview = document.getElementById("modalImagePreview");
+      const imagePopup = new bootstrap.Modal(
+        document.getElementById("imageModal")
+      );
 
       imageInput.addEventListener("change", () => {
         const file = imageInput.files[0];
         if (file) {
-          svgUpload.classList.add("d-none");
+          uploadPrompt.classList.add("d-none");
+          fileFeedback.classList.remove("d-none");
+          fileName.textContent = file.name;
           const reader = new FileReader();
           reader.onload = (e) => {
-            imagePreview.src = e.target.result;
-            imagePreview.style.display = "block"; // Show the image element
+            modalImagePreview.src = e.target.result;
           };
           reader.readAsDataURL(file);
         }
+      });
+      imageBtn.addEventListener("click", () => {
+        imagePopup.show();
       });
     </script>
   </body>
