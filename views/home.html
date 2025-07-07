@@ -41,13 +41,15 @@
           </div>
           <div class="date-panel">
             <h3>Project duration</h3>
-            <div class="label-content">
-              <label for="text" class="me-5">Starting</label>
-              <label for="text">Ending</label>
-            </div>
-            <div class="input-content">
-              <input type="date" value="" class="rounded-2" />
-              <input type="date" name="date" value="" class="rounded-2" />
+            <div class="d-flex justify-content-between">
+              <div class="sdate-content d-flex flex-column">
+                <label for="text" class="me-5">Starting</label>
+                <input type="date" value="" class="rounded-2" />
+              </div>
+              <div class="edate-content d-flex flex-column">
+                <label for="text">Ending</label>
+                <input type="date" name="date" value="" class="rounded-2" />
+              </div>
             </div>
           </div>
           <div class="discription-panle d-flex flex-column mt-4">
@@ -100,7 +102,7 @@
             </div>
           </div>
         </div>
-        <div class="d-grid gap-2 d-sm-flex mb-3 mt-3 button-group">
+        <div class="d-grid gap-2 d-sm-flex mb-3 mt-3 button-group justify-content-center">
           <a href="#">
             <button type="button" class="btn btn-primary btn-lg px-4 gap-3">
               Update
