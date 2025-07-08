@@ -4,58 +4,103 @@
   integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
   crossorigin="anonymous"
 />
-<link rel="stylesheet" href="/styles/style.css" />
+<link rel="stylesheet" href="/styles/style.css">
 
-<%- include("partials/header.ejs") %>
-<section class="body_main">
-  <div class="main_container">
-    <% if(locals.data){ %>
-    <h1>Edit Blog</h1>
-    <form action="/api/home/<%=data.id%>" method="POST">
-      <!-- <input type="hidden" name="id" value="<%= data.id %>" /> -->
-      <input
-        name="name"
-        type="text"
-        placeholder="Name"
-        value="<%= data.name %>"
-      />
-      <input
-        name="title"
-        type="text"
-        placeholder="Title"
-        value="<%= data.title %>"
-      />
-      <textarea name="blog" placeholder="Blog content">
-<%= data.blog %></textarea
-      >
-      <button class="submit-button" type="submit" value="Submit">
-        Update Blog
-      </button>
-    </form>
-    <% } else { %>
-    <h1>Create Blog</h1>
-    <form action="/api/home" method="POST" class="edit_container">
-      <input
-        name="name"
-        type="text"
-        class="feedback-input"
-        placeholder="Name"
-        required
-      />
-      <input
-        name="title"
-        type="text"
-        class="feedback-input"
-        placeholder="Title"
-        required
-      />
-      <textarea
-        name="blog"
-        class="feedback-input"
-        placeholder="Comment"
-      ></textarea>
-      <button type="submit" value="Submit" class="submit-button">Submit</button>
-    </form>
-    <% } %>
+<% let formAction = ''; 
+   let buttonText = ''; 
+   let project = {name: '', title: '', blog: ''}; 
+   let isEditing = false; 
+   let pageTitle = ''; %>
+
+<% if(locals.data){ 
+   pageTitle = 'Edit Project';
+   formAction = '/api/home/' + data.id;
+   buttonText = 'Update Project';
+   project = data; // Use the real data from the database
+   isEditing = true;    
+ } else { 
+    pageTitle = 'Create Project';
+    formAction = '/api/home'; // Or whatever your create route is
+    buttonText = 'Create Project';
+ } %>
+
+ <body>
+  <header class="top-header d-flex align-items-center px-4 border-bottom">
+    <h1><%= pageTitle %></h1>
+  </header>
+  <div class="app-content-area d-flex flex-grow-1">
+    <%- include("partials/header.ejs") %>
+    <main class="d-flex justify-content-center w-100"><%- include("partials/project-form.ejs",{
+        pageTitle: pageTitle,
+        formAction: formAction,
+        buttonText: buttonText,
+        project: project,
+        isEditing: isEditing
+    }) %></main>
+    <div class="modal modal fade" tabindex="-1" role="dialog" id="imageModal">
+      <div class="modal-dialog">
+        <div class="modal-content rounded-4 shadow">
+          <div class="modal-header border-bottom-0">
+            <h1 class="modal-title fs-5">Image Preview</h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body py-0">
+            <img
+              src=""
+              alt=""
+              id="modalImagePreview"
+              style="max-width: 100%; height: auto"
+            />
+          </div>
+          <div
+            class="modal-footer flex-column align-items-stretch w-100 gap-2 pb-3 border-top-0"
+          >
+            <button
+              type="button"
+              class="btn btn-lg btn-primary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</section>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const imageInput = document.getElementById("imageInput");
+    const uploadPrompt = document.getElementById("upload-prompt");
+    const fileFeedback = document.getElementById("file-feedback");
+    const fileName = document.getElementById("fileName");
+    const imageBtn = document.getElementById("viewImgBtn");
+    const imageModalPreview = document.getElementById("modalImagePreview");
+    const imagePopup = new bootstrap.Modal(
+      document.getElementById("imageModal")
+    );
+
+    imageInput.addEventListener("change", () => {
+      const file = imageInput.files[0];
+      if (file) {
+        uploadPrompt.classList.add("d-none");
+        fileFeedback.classList.remove("d-none");
+        fileName.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          modalImagePreview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    imageBtn.addEventListener("click", () => {
+      imagePopup.show();
+    });
+  </script>
+</body>

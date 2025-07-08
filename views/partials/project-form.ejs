@@ -1,0 +1,103 @@
+<div class="d-flex flex-column justify-content-center align-items-center mt-5">
+  <h1 class="mb-5"><%= pageTitle%></h1>
+  <form action="<%= formAction %>" method="POST" class="edit_container">
+    <div class="form-content d-flex flex-column">
+      <div class="name-panel d-flex flex-column mb-3">
+        <label for="name" class="font-weight-bold fs-5">By:</label>
+        <input
+          type="username"
+          name="name"
+          class="rounded-1"
+          required
+          value="<%= project.name %>"
+        />
+      </div>
+      <div class="title-panel d-flex flex-column mb-3">
+        <label for="title" class="font-weight-bold fs-5">Title</label>
+        <input type="text" name="title" value="<%= project.title %>" required class="rounded-1" />
+      </div>
+      <div class="date-panel">
+        <h3>Project duration</h3>
+        <div class="d-flex justify-content-between">
+          <div class="sdate-content d-flex flex-column">
+            <label for="text" class="me-5">Starting</label>
+            <input type="date" value="" class="rounded-2" />
+          </div>
+          <div class="edate-content d-flex flex-column">
+            <label for="text">Ending</label>
+            <input type="date" name="date" value="" class="rounded-2" />
+          </div>
+        </div>
+      </div>
+      <div class="discription-panle d-flex flex-column mt-4">
+        <label for="text" class="font-weight-bold fs-3 mb-2"
+          >Project discription</label
+        >
+        <textarea
+          name="blog"
+          rows="12"
+          cols="60"
+          style="overflow: auto; border-radius: 0.5rem"
+        ><%= project.blog %></textarea>
+      </div>
+
+      <div class="img-panel mt-4 rounded-3" style="border: 1px solid">
+        <div
+          class="default-content d-flex flex-column align-items-center mb-4 mt-4"
+          id="upload-prompt"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="50"
+            height="50"
+            fill="currentColor"
+            class="bi bi-cloud-plus"
+            id="upload-icon"
+            viewBox="0 0 16 16"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M8 5.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 .5-.5"
+            />
+            <path
+              d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383m.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"
+            />
+          </svg>
+          <h3>Drag & Drope to upload file</h3>
+          <h6>or</h6>
+          <label
+            for="imageInput"
+            style="cursor: pointer; border: 1px solid"
+            class="p-1 rounded-1"
+          >
+            Browse File
+          </label>
+          <input
+            type="file"
+            name="image"
+            id="imageInput"
+            accept=".jpg, .jpeg, .png"
+            class="d-flex ms-5 d-none"
+          />
+        </div>
+        <div
+          class="d-none d-flex flex-column justify-content-center align-items-center mt-4 mb-4"
+          id="file-feedback"
+        >
+          <h4>File name:</h4>
+          <p id="fileName">Upload file</p>
+          <button id="viewImgBtn">View image</button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="d-grid gap-2 d-sm-flex mb-3 mt-3 button-group justify-content-center"
+    >
+      <a href="/add">
+        <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">
+          <%= buttonText %>
+        </button>
+      </a>
+    </div>
+  </form>
+</div>
