@@ -30,7 +30,7 @@
   </header>
   <div class="app-content-area d-flex flex-grow-1">
     <%- include("partials/header.ejs") %>
-    <main class="d-flex justify-content-center w-100"><%- include("partials/project-form.ejs",{
+    <main class="d-flex justify-content-center w-100 app-content"><%- include("partials/project-form.ejs",{
         pageTitle: pageTitle,
         formAction: formAction,
         buttonText: buttonText,
@@ -41,7 +41,7 @@
       <div class="modal-dialog">
         <div class="modal-content rounded-4 shadow">
           <div class="modal-header border-bottom-0">
-            <h1 class="modal-title fs-5">Image Preview</h1>
+            <h1 class="modal-title fs-5" style="color: black;">Image Preview</h1>
             <button
               type="button"
               class="btn-close"
@@ -62,7 +62,8 @@
           >
             <button
               type="button"
-              class="btn btn-lg btn-primary"
+              class="btn btn-lg"
+              style="background-color: rgba(53, 25, 124, 0.715);"
               data-bs-dismiss="modal"
             >
               Close

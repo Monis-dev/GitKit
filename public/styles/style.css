@@ -8,7 +8,7 @@ body {
   font-family: "Baloo Bhaijaan 2", sans-serif;
   font-size: 1rem;
   line-height: 1.6;
-  background-color: rgb(31, 31, 31); 
+  background-color: rgb(31, 31, 31);
   color: #f0f2f5;
 }
 
@@ -20,4 +20,27 @@ body {
   display: flex;
   align-items: center;
   padding: 0 2rem;
+}
+
+.sidebar-nav {
+  flex-shrink: 0;
+  background-color: rgb(21, 21, 21);
+}
+
+form {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px; /* Optional */
+  padding: 2rem; /* Optional */
+}
+
+form:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+input{
+  padding: .5rem;
+  border: 0px solid;
 }

@@ -7,25 +7,31 @@
         <input
           type="username"
           name="name"
-          class="rounded-1"
+          class="rounded-4"
           required
           value="<%= project.name %>"
         />
       </div>
       <div class="title-panel d-flex flex-column mb-3">
         <label for="title" class="font-weight-bold fs-5">Title</label>
-        <input type="text" name="title" value="<%= project.title %>" required class="rounded-1" />
+        <input
+          type="text"
+          name="title"
+          value="<%= project.title %>"
+          required
+          class="rounded-4"
+        />
       </div>
       <div class="date-panel">
         <h3>Project duration</h3>
         <div class="d-flex justify-content-between">
           <div class="sdate-content d-flex flex-column">
             <label for="text" class="me-5">Starting</label>
-            <input type="date" value="" class="rounded-2" />
+            <input type="date" value="" class="rounded-4" />
           </div>
           <div class="edate-content d-flex flex-column">
             <label for="text">Ending</label>
-            <input type="date" name="date" value="" class="rounded-2" />
+            <input type="date" name="date" value="" class="rounded-4" />
           </div>
         </div>
       </div>
@@ -37,8 +43,11 @@
           name="blog"
           rows="12"
           cols="60"
+          class="rounded-2 px-2"
           style="overflow: auto; border-radius: 0.5rem"
-        ><%= project.blog %></textarea>
+        >
+<%= project.blog %></textarea
+        >
       </div>
 
       <div class="img-panel mt-4 rounded-3" style="border: 1px solid">
@@ -85,8 +94,15 @@
           id="file-feedback"
         >
           <h4>File name:</h4>
-          <p id="fileName">Upload file</p>
-          <button id="viewImgBtn">View image</button>
+          <p id="fileName"></p>
+          <label
+            for="viewImgBtn"
+            style="cursor: pointer; border: 1px solid"
+            class="p-1 rounded-1"
+            id="viewImgBtn"
+          >
+            View image
+          </label>
         </div>
       </div>
     </div>
