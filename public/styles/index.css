@@ -54,7 +54,7 @@ body {
 
 .project-item {
   width: 350px;
-  background: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+  background: rgba(25, 25, 25, 0); /* Semi-transparent white */
   border-radius: 10px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -63,11 +63,12 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .project-item:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 20px #9ABDD5; 
   cursor: pointer;
 }
 
