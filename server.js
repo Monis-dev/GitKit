@@ -3,11 +3,17 @@ import bodyParser from "body-parser";
 import pg from "pg";
 import env from "dotenv";
 import bcrypt, { hash } from "bcrypt";
+import multer from "multer";
+import path from "path";
 
 const app = express();
 const port = 4000;
 const saltRounds = 10;
 env.config();
+
+app.use(express.static("public"));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 let data = {
   //empty data set declear
@@ -15,13 +21,24 @@ let data = {
   name: "",
   title: "",
   blog: "",
-  date: "",
+  sdate: "",
+  edate: "",
+  imagePath: "",
 };
-const storeData = []; //to show all the blog post
 
-app.use(express.static("public"));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "/public/uploads");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+const storeData = []; //to show all the blog post
 
 const db = new pg.Client({
   user: process.env.PG_USER,
@@ -92,7 +109,8 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.get("/home", (req, res) => {
+app.get("/home", async(req, res) => {
+  
   res.json(storeData);
 });
 
@@ -113,7 +131,11 @@ app.post("/add", (req, res) => {
     name: req.body.name,
     title: req.body.title,
     blog: req.body.blog,
+    sdate: req.body.sdate,
+    edate: req.body.edate,
+    imagePath: req.body.imagePath,
   };
+  console.log(data)
   storeData.push(data); //push array
   res.status(202).json(data);
 });
@@ -128,6 +150,8 @@ app.patch("/home/:id", (req, res) => {
   if (req.body.name) post.name = req.body.name;
   if (req.body.blog) post.blog = req.body.blog;
   if (req.body.title) post.title = req.body.title;
+  if (req.body.sdate) post.title = req.body.sdate;
+  if (req.body.edate) post.title = req.body.edate;
 
   res.json(post);
 });

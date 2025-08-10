@@ -1,6 +1,11 @@
 <div class="d-flex flex-column justify-content-center align-items-center mt-5">
   <h1 class="mb-5"><%= pageTitle%></h1>
-  <form action="<%= formAction %>" method="POST" class="edit_container">
+  <form
+    action="<%= formAction %>"
+    method="POST"
+    class="edit_container"
+    enctype="multipart/form-data"
+  >
     <div class="form-content d-flex flex-column">
       <div class="name-panel d-flex flex-column mb-3">
         <label for="name" class="font-weight-bold fs-5">By:</label>
@@ -27,11 +32,21 @@
         <div class="d-flex justify-content-between">
           <div class="sdate-content d-flex flex-column">
             <label for="text" class="me-5">Starting</label>
-            <input type="date" value="" class="rounded-4" />
+            <input
+              type="date"
+              name="sdate"
+              value="<%= project.sdate %>"
+              class="rounded-4"
+            />
           </div>
           <div class="edate-content d-flex flex-column">
             <label for="text">Ending</label>
-            <input type="date" name="date" value="" class="rounded-4" />
+            <input
+              type="date"
+              name="edate"
+              value="<%= project.edate %>"
+              class="rounded-4"
+            />
           </div>
         </div>
       </div>
@@ -45,14 +60,15 @@
           cols="60"
           class="rounded-2 px-2"
           style="overflow: auto; border-radius: 0.5rem"
-        >
-<%= project.blog %></textarea
-        >
+        ><%= project.blog %></textarea>
       </div>
 
-      <div class="img-panel mt-4 rounded-3" style="border: 1px solid">
+      <div
+        class="img-panel mt-4 rounded-3 d-flex flex-column justify-content-center"
+        style="border: 1px solid; min-height: 200px"
+      >
         <div
-          class="default-content d-flex flex-column align-items-center mb-4 mt-4"
+          class="default-content d-flex flex-column align-items-center mb-4 mt-4 <%= project.imagePath ? 'd-none' : '' %>"
           id="upload-prompt"
         >
           <svg
@@ -89,17 +105,19 @@
             class="d-flex ms-5 d-none"
           />
         </div>
+
         <div
-          class="d-none d-flex flex-column justify-content-center align-items-center mt-4 mb-4"
+          class="d-flex flex-column justify-content-center align-items-center mt-4 mb-4 <%= project.imagePath ? '' : 'd-none' %>"
           id="file-feedback"
         >
           <h4>File name:</h4>
-          <p id="fileName"></p>
+          <p id="fileName"><%= project.imagePath %></p>
           <label
             for="viewImgBtn"
             style="cursor: pointer; border: 1px solid"
             class="p-1 rounded-1"
             id="viewImgBtn"
+            data-image-path="<%= project.imagePath %>"
           >
             View image
           </label>

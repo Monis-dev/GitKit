@@ -2,16 +2,33 @@ import express from "express";
 import bodyParser from "body-parser";
 import axios from "axios";
 import env from "dotenv";
+import multer from "multer";
+import path from "path"; 
+import { fileURLToPath } from "url";
 
 const app = express();
 const port = 3000;
 const API_URL = "http://localhost:4000";
 env.config();
 
-app.use(express.static("public"));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads/");
+  },
+  filename: (req, file, cb) => {
+    // Create a unique filename to prevent overwriting
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage: storage });
 
 app.get("/", (req, res) => {
   res.render("loginPage.ejs", { loginError: null });
@@ -71,13 +88,20 @@ app.get("/add", (req, res) => {
 });
 
 //upload data
-app.post("/api/home", async (req, res) => {
+app.post("/api/home", upload.single("image"), async (req, res) => {
   try {
-    const { name, title, blog } = req.body;
+    const { name, title, blog, sdate, edate } = req.body;
+    let imagePath = null;
+    if (req.file) {
+      imagePath = req.file.path;
+    }
     const response = await axios.post(`${API_URL}/add`, {
       name: name,
       title: title,
       blog: blog,
+      sdate: sdate,
+      edate: edate,
+      imagePath: imagePath,
     });
     res.redirect("/home");
   } catch (error) {
