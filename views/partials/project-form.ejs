@@ -1,7 +1,7 @@
 <div class="d-flex flex-column justify-content-center align-items-center mt-5">
   <h1 class="mb-5"><%= pageTitle%></h1>
   <form
-    action="<%= formAction %>"
+    action="<%= isEditing ? formAction + '?_method=PATCH' : formAction %>"
     method="POST"
     class="edit_container"
     enctype="multipart/form-data"
@@ -34,8 +34,8 @@
             <label for="text" class="me-5">Starting</label>
             <input
               type="date"
-              name="sdate"
-              value="<%= project.sdate %>"
+              name="starting_date"
+              value="<%= project.starting_date %>"
               class="rounded-4"
             />
           </div>
@@ -43,8 +43,8 @@
             <label for="text">Ending</label>
             <input
               type="date"
-              name="edate"
-              value="<%= project.edate %>"
+              name="ending_date"
+              value="<%= project.ending_date %>"
               class="rounded-4"
             />
           </div>
@@ -55,12 +55,17 @@
           >Project discription</label
         >
         <textarea
-          name="blog"
+          name="description"
           rows="12"
           cols="60"
           class="rounded-2 px-2"
           style="overflow: auto; border-radius: 0.5rem"
-        ><%= project.blog %></textarea>
+        ><%= project.description %></textarea>
+      </div>
+
+      <div class="tech-panel d-flex flex-column ">
+        <label for="text">Technology used</label>
+        <input type="text" name="tech_used" value="<%= project.tech_used %>">
       </div>
 
       <div

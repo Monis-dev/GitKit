@@ -5,6 +5,7 @@ import env from "dotenv";
 import multer from "multer";
 import path from "path"; 
 import { fileURLToPath } from "url";
+import methodOverride from "method-override";
 
 const app = express();
 const port = 3000;
@@ -14,6 +15,7 @@ env.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -90,7 +92,7 @@ app.get("/add", (req, res) => {
 //upload data
 app.post("/api/home", upload.single("image"), async (req, res) => {
   try {
-    const { name, title, blog, sdate, edate } = req.body;
+    const { name, title, description, starting_date, ending_date, tech_used } = req.body;
     let imagePath = null;
     if (req.file) {
       imagePath = req.file.path;
@@ -98,9 +100,10 @@ app.post("/api/home", upload.single("image"), async (req, res) => {
     const response = await axios.post(`${API_URL}/add`, {
       name: name,
       title: title,
-      blog: blog,
-      sdate: sdate,
-      edate: edate,
+      description: description,
+      starting_date: starting_date,
+      ending_date: ending_date,
+      tech_used: tech_used,
       imagePath: imagePath,
     });
     res.redirect("/home");
@@ -122,12 +125,18 @@ app.get("/edit/:id", async (req, res) => {
   }
 });
 
-app.post("/api/home/:id", async (req, res) => {
+app.patch("/api/home/:id", upload.single("image"), async (req, res) => {
   try {
-    const response = await axios.patch(
-      `${API_URL}/home/${Number(req.params.id)}`,
-      req.body
-    );
+    const updatedData = { ...req.body };
+
+    // If a new file was uploaded during the edit, add its path
+    if (req.file) {
+      updatedData.imagePath = req.file.path;
+    }
+
+    // Send the PATCH request to the backend API
+    await axios.patch(`${API_URL}/home/${Number(req.params.id)}`, updatedData);
+
     res.redirect("/home");
   } catch (error) {
     res.status(404).json({ message: "Error loading Edited home page" });

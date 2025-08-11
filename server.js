@@ -20,9 +20,10 @@ let data = {
   id: "",
   name: "",
   title: "",
-  blog: "",
-  sdate: "",
-  edate: "",
+  description: "",
+  starting_date: "",
+  ending_date: "",
+  tech_used: "",
   imagePath: "",
 };
 
@@ -130,9 +131,10 @@ app.post("/add", (req, res) => {
     date: new Date(),
     name: req.body.name,
     title: req.body.title,
-    blog: req.body.blog,
-    sdate: req.body.sdate,
-    edate: req.body.edate,
+    description: req.body.description,
+    starting_date: req.body.starting_date,
+    ending_date: req.body.ending_date,
+    tech_used: req.body.tech_used,
     imagePath: req.body.imagePath,
   };
   console.log(data)
@@ -148,11 +150,11 @@ app.patch("/home/:id", (req, res) => {
   }
 
   if (req.body.name) post.name = req.body.name;
-  if (req.body.blog) post.blog = req.body.blog;
+  if (req.body.description) post.description = req.body.description;
   if (req.body.title) post.title = req.body.title;
-  if (req.body.sdate) post.title = req.body.sdate;
-  if (req.body.edate) post.title = req.body.edate;
-
+  if (req.body.starting_date) post.starting_date = req.body.starting_date;
+  if (req.body.ending_date) post.ending_date = req.body.ending_date;
+  if (req.body.tech_used) post.tech_used = req.body.tech_used;
   res.json(post);
 });
 
