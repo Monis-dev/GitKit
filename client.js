@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import axios from "axios";
 import env from "dotenv";
 import multer from "multer";
-import path from "path"; 
+import path from "path";
 import { fileURLToPath } from "url";
 import methodOverride from "method-override";
 
@@ -67,9 +67,9 @@ app.post("/login", async (req, res) => {
   try {
     await axios.post(`${API_URL}/api/login`, getData);
     res.redirect("/home");
-    console.log("Login successful")
+    console.log("Login successful");
   } catch (error) {
-    res.render("loginPage.ejs", {loginError: true})
+    res.render("loginPage.ejs", { loginError: true });
     console.log(error);
   }
 });
@@ -92,7 +92,8 @@ app.get("/add", (req, res) => {
 //upload data
 app.post("/api/home", upload.single("image"), async (req, res) => {
   try {
-    const { name, title, description, starting_date, ending_date, tech_used } = req.body;
+    const { name, title, description, starting_date, ending_date, tech_used } =
+      req.body;
     let imagePath = null;
     if (req.file) {
       imagePath = req.file.path;

@@ -110,8 +110,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.get("/home", async(req, res) => {
-  
+app.get("/home", async (req, res) => {
   res.json(storeData);
 });
 
@@ -137,7 +136,7 @@ app.post("/add", (req, res) => {
     tech_used: req.body.tech_used,
     imagePath: req.body.imagePath,
   };
-  console.log(data)
+  console.log(data);
   storeData.push(data); //push array
   res.status(202).json(data);
 });
@@ -148,13 +147,13 @@ app.patch("/home/:id", (req, res) => {
   if (!post) {
     return res.status(404).json({ message: "Error loading home page" });
   }
-
-  if (req.body.name) post.name = req.body.name;
-  if (req.body.description) post.description = req.body.description;
-  if (req.body.title) post.title = req.body.title;
-  if (req.body.starting_date) post.starting_date = req.body.starting_date;
-  if (req.body.ending_date) post.ending_date = req.body.ending_date;
-  if (req.body.tech_used) post.tech_used = req.body.tech_used;
+  for (const Key in req.body) {
+    if (req.body[Key]) {
+      post[Key] = req.body[Key];
+    } else {
+      return res.status(404).json({message: "Error updating the post..."})
+    }
+  }
   res.json(post);
 });
 
