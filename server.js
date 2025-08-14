@@ -4,7 +4,6 @@ import pg from "pg";
 import env from "dotenv";
 import bcrypt, { hash } from "bcrypt";
 import multer from "multer";
-import path from "path";
 
 const app = express();
 const port = 4000;
@@ -110,24 +109,46 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.get("/home", async (req, res) => {
-  res.json(storeData);
+app.get("/api/user/:id", async (req, res) => {
+  try {
+    const userID = req.params.id;
+    const response = await db.query("SELECT * FROM users WHERE id = $1", [
+      userID,
+    ]);
+    if (response.rows.length > 0) {
+      console.log("User session successful");
+      res.status(200).json(response.rows[0]);
+    } else {
+      console.log("User session does not exist");
+    }
+  } catch (error) {
+    console.log(error);
+  }
 });
 
-app.get("/home/:id", (req, res) => {
-  const Foundpost = storeData.find((post) => post.id === Number(req.params.id));
-  if (!Foundpost) {
+app.get("/home/", async (req, res) => {
+  const response = await db.query("SELECT * FROM post WHERE user_id = $1", [
+    req.query.userId,
+  ]);
+  res.json(response);
+});
+
+app.get("/home/:id", async (req, res) => {
+  const response = await db.query("SELECT * FROM post WHERE id = $1", [
+    req.params.id,
+  ]);
+  if (response.rows.length > 0) {
+    res.json(response.rows[0]);
+  } else {
     res.status(404).json({
       error: "Id not found",
     });
   }
-  res.json(Foundpost);
 });
 
-app.post("/add", (req, res) => {
-  data = {
-    id: Date.now() + Math.random(), //to have a unique identity of the blog
-    date: new Date(),
+app.post("/add", async (req, res) => {
+  const userId = req.body.userId
+  const userPost = {
     name: req.body.name,
     title: req.body.title,
     description: req.body.description,
@@ -136,39 +157,42 @@ app.post("/add", (req, res) => {
     tech_used: req.body.tech_used,
     imagePath: req.body.imagePath,
   };
-  console.log(data);
-  storeData.push(data); //push array
-  res.status(202).json(data);
+  const result = await db.query(
+    "INSERT INTO post(name, title, description, starting_date, ending_date, tech_used, image_path, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+    [
+      userPost.name,
+      userPost.title,
+      userPost.description,
+      userPost.starting_date,
+      userPost.ending_date,
+      userPost.tech_used,
+      userPost.imagePath,
+      userId,
+    ]
+  );
+  res.status(202).json(result.rows);
 });
 
-app.patch("/home/:id", (req, res) => {
-  const post = storeData.find((index) => index.id === Number(req.params.id));
-  console.log(post);
-  if (!post) {
-    return res.status(404).json({ message: "Error loading home page" });
-  }
-  for (const Key in req.body) {
-    if (req.body[Key]) {
-      post[Key] = req.body[Key];
-    } else {
-      return res.status(404).json({message: "Error updating the post..."})
-    }
-  }
-  res.json(post);
+app.patch("/home/:id", async (req, res) => {
+  const userId = req.body.userId;
+  const response = await db.query(
+    "UPDATE post SET name = $1, title = $2, starting_date  = $3, ending_date = $4, description = $5, tech_used = $6 WHERE id = $ AND user_id = $8",
+    [
+      req.body.name,
+      req.body.title,
+      req.body.description,
+      req.body.starting_date,
+      req.body.ending_date,
+      req.body.tech_used,
+      req.params.id,
+      userId
+    ]
+  );
+  res.json(response);
 });
 
-app.delete("/home/:id", (req, res) => {
-  const idToDelete = Number(req.params.id);
-  const indexToDelete = storeData.findIndex((item) => item.id === idToDelete);
-
-  if (indexToDelete > -1) {
-    storeData.splice(indexToDelete, 1);
-    console.log(`Successfully deleted item at index: ${indexToDelete}`);
-    res.json({ message: "Post deleted successfully" });
-  } else {
-    console.log(`Could not find item with ID: ${idToDelete} to delete.`);
-    res.status(404).json({ message: "Unable to find the post to delete" });
-  }
+app.delete("/home/:id", async(req, res) => {
+  const respone = await db.query("DELETE FROM post WHERE id = $1 AND user_id = $2", [req.params.id, req.body.userId])
 });
 
 app.listen(port, () => {

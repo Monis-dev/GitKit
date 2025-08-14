@@ -6,6 +6,11 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import methodOverride from "method-override";
+import session from "express-session";
+import passport from "passport";
+import { Strategy } from "passport-local";
+import { userInfo } from "os";
+import { error } from "console";
 
 const app = express();
 const port = 3000;
@@ -20,6 +25,20 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+app.use(
+  session({
+    secret: process.env.PG_SESSION,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      maxAge: 1000 * 60,
+    },
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -59,26 +78,41 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
-  const getData = {
-    username: req.body["username"],
-    password: req.body["password"],
-  };
-  try {
-    await axios.post(`${API_URL}/api/login`, getData);
-    res.redirect("/home");
-    console.log("Login successful");
-  } catch (error) {
-    res.render("loginPage.ejs", { loginError: true });
-    console.log(error);
-  }
-});
+// app.post("/login", async (req, res) => {
+//   const getData = {
+//     username: req.body["username"],
+//     password: req.body["password"],
+//   };
+//   try {
+//     await axios.post(`${API_URL}/api/login`, getData);
+//     res.redirect("/home");
+//     console.log("Login successful");
+//   } catch (error) {
+//     res.render("loginPage.ejs", { loginError: true });
+//     console.log(error);
+//   }
+// });
+
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/home",
+    successMessage: "Session successful",
+    failureRedirect: "/login",
+    failureMessage: "Session failed",
+  })
+);
 
 //get home page
 app.get("/home", async (req, res) => {
   try {
-    const response = await axios.get(`${API_URL}/home`);
-    res.render("index.ejs", { storeData: response.data });
+    if (req.isAuthenticated()) {
+      const response = await axios.get(`${API_URL}/home`);
+      res.render("index.ejs", { storeData: response.data });
+    } else {
+      res.redirect("/");
+      console.log("Session not initialized");
+    }
   } catch (error) {
     res.status(500).json({ message: "Error fetching posts" });
   }
@@ -129,15 +163,10 @@ app.get("/edit/:id", async (req, res) => {
 app.patch("/api/home/:id", upload.single("image"), async (req, res) => {
   try {
     const updatedData = { ...req.body };
-
-    // If a new file was uploaded during the edit, add its path
     if (req.file) {
       updatedData.imagePath = req.file.path;
     }
-
-    // Send the PATCH request to the backend API
     await axios.patch(`${API_URL}/home/${Number(req.params.id)}`, updatedData);
-
     res.redirect("/home");
   } catch (error) {
     res.status(404).json({ message: "Error loading Edited home page" });
@@ -150,6 +179,34 @@ app.get("/delete/:id", async (req, res) => {
     res.redirect("/home");
   } catch (error) {
     res.status(404).json({ message: "Unable to delete the blog!" });
+  }
+});
+
+passport.use(
+  new Strategy(async function verify(username, password, cb) {
+    try {
+      const response = await axios.post(`${API_URL}/api/login`, {
+        username,
+        password,
+      });
+      return cb(null, response.data);
+    } catch (error) {
+      console.log(error);
+      cb(null, false);
+    }
+  })
+);
+passport.serializeUser((user, cb) => {
+  cb(null, user.id);
+});
+
+passport.deserializeUser(async(id, cb) => {
+  try {
+    const response = await axios.get(`${API_URL}/api/user/${id}`);
+    cb(null, response.data);
+  } catch (error) {
+    console.log(error)
+    cb(error)
   }
 });
 
