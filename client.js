@@ -32,7 +32,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
     cookie: {
-      maxAge: 1000 * 60,
+      maxAge: 1000 * 60 * 60,
     },
   })
 );
@@ -107,7 +107,7 @@ app.post(
 app.get("/home", async (req, res) => {
   try {
     if (req.isAuthenticated()) {
-      const response = await axios.get(`${API_URL}/home`);
+      const response = await axios.get(`${API_URL}/home?userId=${req.user.id}`);
       res.render("index.ejs", { storeData: response.data });
     } else {
       res.redirect("/");
@@ -128,9 +128,10 @@ app.post("/api/home", upload.single("image"), async (req, res) => {
   try {
     const { name, title, description, starting_date, ending_date, tech_used } =
       req.body;
-    let imagePath = null;
+    let image_path = null;
+    const userId = req.user.id;
     if (req.file) {
-      imagePath = req.file.path;
+      image_path = req.file.path;
     }
     const response = await axios.post(`${API_URL}/add`, {
       name: name,
@@ -139,7 +140,8 @@ app.post("/api/home", upload.single("image"), async (req, res) => {
       starting_date: starting_date,
       ending_date: ending_date,
       tech_used: tech_used,
-      imagePath: imagePath,
+      image_path: image_path,
+      userId: userId,
     });
     res.redirect("/home");
   } catch (error) {
@@ -152,7 +154,7 @@ app.post("/api/home", upload.single("image"), async (req, res) => {
 app.get("/edit/:id", async (req, res) => {
   try {
     const response = await axios.get(
-      `${API_URL}/home/${Number(req.params.id)}`
+      `${API_URL}/home/${parseInt(req.params.id)}`
     );
     res.render("modify.ejs", { data: response.data });
   } catch (error) {
@@ -162,9 +164,10 @@ app.get("/edit/:id", async (req, res) => {
 
 app.patch("/api/home/:id", upload.single("image"), async (req, res) => {
   try {
-    const updatedData = { ...req.body };
+    const userId = req.user.id;
+    const updatedData = { ...req.body, userId };
     if (req.file) {
-      updatedData.imagePath = req.file.path;
+      updatedData.image_path = req.file.path;
     }
     await axios.patch(`${API_URL}/home/${Number(req.params.id)}`, updatedData);
     res.redirect("/home");
@@ -173,9 +176,11 @@ app.patch("/api/home/:id", upload.single("image"), async (req, res) => {
   }
 });
 
-app.get("/delete/:id", async (req, res) => {
+app.delete("/delete/:id", async (req, res) => {
   try {
-    await axios.delete(`${API_URL}/home/${Number(req.params.id)}`);
+    const postId = parseInt(req.params.id);
+    const userId = req.user.id;
+    await axios.delete(`${API_URL}/home/${postId}?userId=${userId}`);
     res.redirect("/home");
   } catch (error) {
     res.status(404).json({ message: "Unable to delete the blog!" });
@@ -200,13 +205,13 @@ passport.serializeUser((user, cb) => {
   cb(null, user.id);
 });
 
-passport.deserializeUser(async(id, cb) => {
+passport.deserializeUser(async (id, cb) => {
   try {
     const response = await axios.get(`${API_URL}/api/user/${id}`);
     cb(null, response.data);
   } catch (error) {
-    console.log(error)
-    cb(error)
+    console.log(error);
+    cb(error);
   }
 });
 

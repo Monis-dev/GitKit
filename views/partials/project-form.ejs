@@ -35,7 +35,7 @@
             <input
               type="date"
               name="starting_date"
-              value="<%= project.starting_date %>"
+              value="<%= new Date(project.starting_date).toLocaleDateString() %>"
               class="rounded-4"
             />
           </div>
@@ -44,7 +44,7 @@
             <input
               type="date"
               name="ending_date"
-              value="<%= project.ending_date %>"
+              value="<%= new Date(project.ending_date).toLocaleDateString() %>"
               class="rounded-4"
             />
           </div>
@@ -73,7 +73,7 @@
         style="border: 1px solid; min-height: 200px"
       >
         <div
-          class="default-content d-flex flex-column align-items-center mb-4 mt-4 <%= project.imagePath ? 'd-none' : '' %>"
+          class="default-content d-flex flex-column align-items-center mb-4 mt-4 <%= project.image_path ? 'd-none' : '' %>"
           id="upload-prompt"
         >
           <svg
@@ -112,17 +112,17 @@
         </div>
 
         <div
-          class="d-flex flex-column justify-content-center align-items-center mt-4 mb-4 <%= project.imagePath ? '' : 'd-none' %>"
+          class="d-flex flex-column justify-content-center align-items-center mt-4 mb-4 <%= project.image_path ? '' : 'd-none' %>"
           id="file-feedback"
         >
           <h4>File name:</h4>
-          <p id="fileName"><%= project.imagePath %></p>
+          <p id="fileName"><%= project.image_path %></p>
           <label
             for="viewImgBtn"
             style="cursor: pointer; border: 1px solid"
             class="p-1 rounded-1"
             id="viewImgBtn"
-            data-image-path="<%= project.imagePath %>"
+            data-image-path="<%= project.image_path %>"
           >
             View image
           </label>

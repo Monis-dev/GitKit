@@ -47,7 +47,7 @@
               class="btn-close"
               data-bs-dismiss="modal"
               aria-label="Close"
-              data-image-path="<%= project.imagePath %>"
+              data-image-path="<%= project.image_path %>"
             ></button>
           </div>
           <div class="modal-body py-0">
@@ -102,9 +102,9 @@
       }
     });
     imageBtn.addEventListener("click", () => {
-      const existingImagePath = imageBtn.getAttribute('data-image-path');
-      if(existingImagePath){
-         const imageURL = existingImagePath.replace(/\\/g, '/').replace('public/', '/');
+      const existingimage_path = imageBtn.getAttribute('data-image-path');
+      if(existingimage_path){
+         const imageURL = existingimage_path.replace(/\\/g, '/').replace('public/', '/');
         modalImagePreview.src = imageURL
       } 
       imagePopup.show();

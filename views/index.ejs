@@ -39,7 +39,7 @@ Sevillana&display=swap"
               </div>
               <div class="meta-info">
                 <span>By: <%= data.name %></span> |
-                <!-- <span><%= new Date(data.date).toLocaleDateString() %></span> -->
+                <span><%= new Date(data.date).toLocaleDateString() %></span>
               </div>
             </a>
             <div
@@ -50,20 +50,22 @@ Sevillana&display=swap"
                   Mark as complete
                 </button>
               </a>
-              <a href="/delete/<%= data.id %>">
+              <form action="/delete/<%= data.id %>?_method=DELETE" method="POST">
                 <button
-                  type="button"
+                  type="submit"
                   class="btn btn-outline-secondary btn-lg px-4"
                 >
                   Delete
                 </button>
-              </a>
+              </form>
             </div>
           </li>
           <% }); %>
         </ul>
         <% } else { %>
-        <p class="text-center p-5" style="color: aliceblue;">No projects yet. Create a new one!</p>
+        <p class="text-center p-5" style="color: aliceblue">
+          No projects yet. Create a new one!
+        </p>
         <% } %>
       </div>
     </main>

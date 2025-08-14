@@ -14,17 +14,6 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-let data = {
-  //empty data set declear
-  id: "",
-  name: "",
-  title: "",
-  description: "",
-  starting_date: "",
-  ending_date: "",
-  tech_used: "",
-  imagePath: "",
-};
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -94,7 +83,7 @@ app.post("/api/login", async (req, res) => {
           console.log(err);
         } else {
           if (result) {
-            res.status(200).json({ message: "Signup successful" });
+            res.status(200).json(user);
           } else {
             res.status(401).json({ message: "Username or password is wrong!" });
           }
@@ -111,12 +100,11 @@ app.post("/api/login", async (req, res) => {
 
 app.get("/api/user/:id", async (req, res) => {
   try {
-    const userID = req.params.id;
+    const userId = parseInt(req.params.id);
     const response = await db.query("SELECT * FROM users WHERE id = $1", [
-      userID,
+      userId,
     ]);
     if (response.rows.length > 0) {
-      console.log("User session successful");
       res.status(200).json(response.rows[0]);
     } else {
       console.log("User session does not exist");
@@ -126,11 +114,19 @@ app.get("/api/user/:id", async (req, res) => {
   }
 });
 
-app.get("/home/", async (req, res) => {
-  const response = await db.query("SELECT * FROM post WHERE user_id = $1", [
-    req.query.userId,
-  ]);
-  res.json(response);
+app.get("/home", async (req, res) => {
+  const userId = req.query.userId; // First, get the string value, THEN parse it.
+
+  // Safety check for invalid IDs
+  if (isNaN(userId)) {
+    return res.status(400).json({ message: "Invalid user ID provided." });
+  }
+
+  const response = await db.query(
+    "SELECT * FROM post WHERE user_id = $1 ORDER BY id DESC",
+    [userId]
+  );
+  res.json(response.rows);
 });
 
 app.get("/home/:id", async (req, res) => {
@@ -147,7 +143,6 @@ app.get("/home/:id", async (req, res) => {
 });
 
 app.post("/add", async (req, res) => {
-  const userId = req.body.userId
   const userPost = {
     name: req.body.name,
     title: req.body.title,
@@ -155,7 +150,7 @@ app.post("/add", async (req, res) => {
     starting_date: req.body.starting_date,
     ending_date: req.body.ending_date,
     tech_used: req.body.tech_used,
-    imagePath: req.body.imagePath,
+    image_path: req.body.image_path,
   };
   const result = await db.query(
     "INSERT INTO post(name, title, description, starting_date, ending_date, tech_used, image_path, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
@@ -166,33 +161,73 @@ app.post("/add", async (req, res) => {
       userPost.starting_date,
       userPost.ending_date,
       userPost.tech_used,
-      userPost.imagePath,
-      userId,
+      userPost.image_path,
+      req.body.userId,
     ]
   );
   res.status(202).json(result.rows);
 });
 
 app.patch("/home/:id", async (req, res) => {
-  const userId = req.body.userId;
-  const response = await db.query(
-    "UPDATE post SET name = $1, title = $2, starting_date  = $3, ending_date = $4, description = $5, tech_used = $6 WHERE id = $ AND user_id = $8",
-    [
-      req.body.name,
-      req.body.title,
-      req.body.description,
-      req.body.starting_date,
-      req.body.ending_date,
-      req.body.tech_used,
-      req.params.id,
-      userId
-    ]
-  );
-  res.json(response);
+  try {
+    const postId = parseInt(req.params.id);
+    const userId = req.body.userId;
+    const checkResult = await db.query(
+      "SELECT * FROM post WHERE id = $1 AND user_id = $2",
+      [postId, userId]
+    );
+    if (checkResult.rows.length === 0) {
+      res.status(404).json({ message: "Post not found..." });
+    }
+
+    const originalPost = checkResult.rows[0];
+    const updatedPost = {
+      name: req.body.name || originalPost.name,
+      title: req.body.title || originalPost.title,
+      starting_date: req.body.starting_date || originalPost.starting_date,
+      ending_date: req.body.ending_date || originalPost.ending_date,
+      description: req.body.description || originalPost.description,
+      tech_used: req.body.tech_used || originalPost.tech_used,
+      image_path: dataToUpdate.image_path || originalPost.image_path,
+    };
+    const updateQuery = `
+      UPDATE post
+      SET name = $1, title = $2, description = $3, starting_date = $4, ending_date = $5, tech_used = $6, image_path = $7
+      WHERE id = $8 AND user_id = $9
+      RETURNING *;
+    `;
+
+    const result = await db.query(updateQuery, [
+      updatedPost.name,
+      updatedPost.title,
+      updatedPost.description,
+      updatedPost.starting_date,
+      updatedPost.ending_date,
+      updatedPost.tech_used,
+      updatedPost.image_path,
+      postId,
+      userId,
+    ]);
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
-app.delete("/home/:id", async(req, res) => {
-  const respone = await db.query("DELETE FROM post WHERE id = $1 AND user_id = $2", [req.params.id, req.body.userId])
+app.delete("/home/:id", async (req, res) => {
+  try {
+    const postId = parseInt(req.params.id);
+    const userId = parseInt(req.query.userId);
+    await db.query("DELETE FROM post WHERE id = $1 AND user_id = $2", [
+      postId,
+      userId
+    ]);
+    res.status(200).json({message: "Post deleted successfully"})
+  } catch (error) {
+    res.status(404).json({message: "Post not found"})
+  }
 });
 
 app.listen(port, () => {
