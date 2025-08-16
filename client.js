@@ -129,7 +129,7 @@ app.get("/home", async (req, res) => {
   try {
     if (req.isAuthenticated()) {
       const response = await axios.get(`${API_URL}/home?userId=${req.user.id}`);
-      res.render("index.ejs", { storeData: response.data });
+      res.render("index.ejs", { storeData: response.data, currentUser: req.user });
     } else {
       res.redirect("/");
     }
@@ -140,7 +140,8 @@ app.get("/home", async (req, res) => {
 
 //render add page
 app.get("/add", (req, res) => {
-  res.render("modify.ejs");
+  console.log(req.user)
+  res.render("modify.ejs",{currentUser: req.user});
 });
 
 //upload data
@@ -176,7 +177,7 @@ app.get("/edit/:id", async (req, res) => {
     const response = await axios.get(
       `${API_URL}/home/${parseInt(req.params.id)}`
     );
-    res.render("modify.ejs", { data: response.data });
+    res.render("modify.ejs", { data: response.data, currentUser: req.user});
   } catch (error) {
     res.status(500).json({ message: "Error fetching post" });
   }
@@ -246,6 +247,7 @@ passport.use(
           username: profile.displayName,
           password: "google",
           email: profile.emails[0].value,
+          user_image_url: profile.photos[0].value
         };
         const response = await axios.post(
           `${API_URL}/api/auth/google`,

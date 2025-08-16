@@ -88,7 +88,7 @@
       aria-expanded="false"
     >
       <img
-        src="https://github.com/mdo.png"
+        src="<%= currentUser.user_image_url %>"
         alt="mdo"
         width="30"
         height="30"
@@ -96,8 +96,7 @@
       />
     </a>
     <ul class="dropdown-menu dropdown-menu-end text-large shadow">
-      <li><a class="dropdown-item" href="#">Settings</a></li>
-      <li><a class="dropdown-item" href="#">Profile</a></li>
+      <li class="ms-2"><span class="fw-bold">User:</span> <%= currentUser.username %></li>
       <li><hr class="dropdown-divider" /></li>
       <li><a class="dropdown-item" href="/logout">Sign out</a></li>
     </ul>

@@ -29,7 +29,7 @@
     <h1><%= pageTitle %></h1>
   </header>
   <div class="app-content-area d-flex flex-grow-1">
-    <%- include("partials/header.ejs") %>
+    <%- include("partials/header.ejs",{currentUser: currentUser}) %>
     <main class="d-flex justify-content-center w-100 app-content"><%- include("partials/project-form.ejs",{
         pageTitle: pageTitle,
         formAction: formAction,

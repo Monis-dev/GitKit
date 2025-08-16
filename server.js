@@ -41,6 +41,8 @@ app.post("/api/signup", async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
   const email = req.body.email;
+  const user_image_url =
+    "https://cdn-icons-png.flaticon.com/512/12225/12225881.png";
   try {
     const result = await db.query("SELECT * FROM users WHERE username = $1", [
       username,
@@ -51,8 +53,8 @@ app.post("/api/signup", async (req, res) => {
           console.log(err);
         } else {
           await db.query(
-            "INSERT INTO users (username, password, email) VALUES ($1, $2, $3)",
-            [username, hash, email]
+            "INSERT INTO users (username, password, email, user_image_url) VALUES ($1, $2, $3, $4)",
+            [username, hash, email, user_image_url]
           );
           console.log("User sign up successful");
           res.status(201).json({ message: "Signup successful" });
@@ -105,8 +107,8 @@ app.post("/api/auth/google", async (req, res) => {
     ]);
     if (result.rows.length === 0) {
       const newUser = await db.query(
-        "INSERT INTO users(username, password, email) VALUES($1, $2, $3) RETURNING *",
-        [userData.username, userData.password, userData.email]
+        "INSERT INTO users(username, password, email, user_image_url) VALUES($1, $2, $3, $4) RETURNING *",
+        [userData.username, userData.password, userData.email, userData.user_image_url]
       );
       res.status(201).json(newUser.rows[0]);
     } else {
