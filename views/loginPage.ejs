@@ -8,9 +8,13 @@
     <!-- <link rel="stylesheet" href="style.css"> -->
   </head>
   <body>
+    <% if (locals.errorMessage) { %>
+      <script>
+        alert('<%= errorMessage %>')
+      </script>
+    <% } %>
     <main class="login-card">
       <h1>Log In</h1>
-
       <form action="/login" method="POST" class="login-form">
         <div class="form-group">
           <label for="username">Username</label>
@@ -37,15 +41,9 @@
           </a>
         </div>
       </div>
-
       <div class="signup-link">
         <p>Don't have an account? <a href="/signup">Sign up</a></p>
       </div>
     </main>
-    <% if(loginError){ %>
-      <script>
-        alert("Invalid username or password.")
-      </script>
-    <% } %>
   </body>
 </html>

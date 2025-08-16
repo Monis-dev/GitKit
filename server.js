@@ -14,7 +14,6 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "/public/uploads");
@@ -98,6 +97,26 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+app.post("/api/auth/google", async (req, res) => {
+  const userData = req.body;
+  try {
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [
+      userData.email,
+    ]);
+    if (result.rows.length === 0) {
+      const newUser = await db.query(
+        "INSERT INTO users(username, password, email) VALUES($1, $2, $3) RETURNING *",
+        [userData.username, userData.password, userData.email]
+      );
+      res.status(201).json(newUser.rows[0]);
+    } else {
+      res.status(200).json(result.rows[0]);
+    }
+  } catch (error) {
+    res.status(401).json({message: "user or password is worng"})
+  }
+});
+
 app.get("/api/user/:id", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
@@ -143,6 +162,12 @@ app.get("/home/:id", async (req, res) => {
 });
 
 app.post("/add", async (req, res) => {
+  const rawStartDate = req.body.starting_date;
+  const rawEndDate = req.body.ending_date;
+
+  const startDate = rawStartDate ? rawStartDate : null; 
+  const endDate = rawEndDate ? rawEndDate : null;
+
   const userPost = {
     name: req.body.name,
     title: req.body.title,
@@ -158,8 +183,8 @@ app.post("/add", async (req, res) => {
       userPost.name,
       userPost.title,
       userPost.description,
-      userPost.starting_date,
-      userPost.ending_date,
+      startDate,
+      endDate,
       userPost.tech_used,
       userPost.image_path,
       req.body.userId,
@@ -188,7 +213,7 @@ app.patch("/home/:id", async (req, res) => {
       ending_date: req.body.ending_date || originalPost.ending_date,
       description: req.body.description || originalPost.description,
       tech_used: req.body.tech_used || originalPost.tech_used,
-      image_path: dataToUpdate.image_path || originalPost.image_path,
+      image_path: req.file || originalPost.image_path,
     };
     const updateQuery = `
       UPDATE post
@@ -222,11 +247,11 @@ app.delete("/home/:id", async (req, res) => {
     const userId = parseInt(req.query.userId);
     await db.query("DELETE FROM post WHERE id = $1 AND user_id = $2", [
       postId,
-      userId
+      userId,
     ]);
-    res.status(200).json({message: "Post deleted successfully"})
+    res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
-    res.status(404).json({message: "Post not found"})
+    res.status(404).json({ message: "Post not found" });
   }
 });
 

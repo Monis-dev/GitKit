@@ -9,8 +9,10 @@ import methodOverride from "method-override";
 import session from "express-session";
 import passport from "passport";
 import { Strategy } from "passport-local";
+import GoogleStrategy from "passport-google-oauth2";
 import { userInfo } from "os";
 import { error } from "console";
+import flash from "connect-flash";
 
 const app = express();
 const port = 3000;
@@ -40,6 +42,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(flash());
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "public/uploads/");
@@ -52,7 +56,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.get("/", (req, res) => {
-  res.render("loginPage.ejs", { loginError: null });
+  const errorMessage = req.flash("error");
+  res.render("loginPage.ejs", {
+    errorMessage: errorMessage.length > 0 ? errorMessage[0] : null,
+  });
 });
 
 app.get("/signup", (req, res) => {
@@ -72,7 +79,7 @@ app.post("/signup", async (req, res) => {
   try {
     await axios.post(`${API_URL}/api/signup`, getData);
     res.redirect("/");
-    console.log("Login Successful");
+    console.log("SignUp successful");
   } catch (error) {
     console.log(error);
   }
@@ -97,9 +104,23 @@ app.post(
   "/login",
   passport.authenticate("local", {
     successRedirect: "/home",
-    successMessage: "Session successful",
     failureRedirect: "/login",
-    failureMessage: "Session failed",
+    failureFlash: true,
+  })
+);
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    successRedirect: "/home",
+    failureRedirect: "/login",
   })
 );
 
@@ -111,7 +132,6 @@ app.get("/home", async (req, res) => {
       res.render("index.ejs", { storeData: response.data });
     } else {
       res.redirect("/");
-      console.log("Session not initialized");
     }
   } catch (error) {
     res.status(500).json({ message: "Error fetching posts" });
@@ -187,6 +207,15 @@ app.delete("/delete/:id", async (req, res) => {
   }
 });
 
+app.get("/logout", (req, res) => {
+  req.logout((e) => {
+    if (e) {
+      return next(e);
+    }
+    res.redirect("/");
+  });
+});
+
 passport.use(
   new Strategy(async function verify(username, password, cb) {
     try {
@@ -197,10 +226,40 @@ passport.use(
       return cb(null, response.data);
     } catch (error) {
       console.log(error);
-      cb(null, false);
+      cb(null, false, { message: "Username or password is worng" });
     }
   })
 );
+
+passport.use(
+  "google",
+  new GoogleStrategy(
+    {
+      clientID: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      callbackURL: "http://localhost:3000/auth/google/callback",
+    },
+    async (acessToken, refreshToken, profile, cb) => {
+      console.log(profile);
+      try {
+        const userData = {
+          username: profile.displayName,
+          password: "google",
+          email: profile.emails[0].value,
+        };
+        const response = await axios.post(
+          `${API_URL}/api/auth/google`,
+          userData
+        );
+        return cb(null, response.data);
+      } catch (error) {
+        console.log(error);
+        return cb(null, false);
+      }
+    }
+  )
+);
+
 passport.serializeUser((user, cb) => {
   cb(null, user.id);
 });

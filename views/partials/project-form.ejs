@@ -60,12 +60,14 @@
           cols="60"
           class="rounded-2 px-2"
           style="overflow: auto; border-radius: 0.5rem"
-        ><%= project.description %></textarea>
+        >
+<%= project.description %></textarea
+        >
       </div>
 
-      <div class="tech-panel d-flex flex-column ">
+      <div class="tech-panel d-flex flex-column">
         <label for="text">Technology used</label>
-        <input type="text" name="tech_used" value="<%= project.tech_used %>">
+        <input type="text" name="tech_used" value="<%= project.tech_used %>" />
       </div>
 
       <div
