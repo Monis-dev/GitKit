@@ -108,16 +108,47 @@ app.post("/api/auth/google", async (req, res) => {
     if (result.rows.length === 0) {
       const newUser = await db.query(
         "INSERT INTO users(username, password, email, user_image_url) VALUES($1, $2, $3, $4) RETURNING *",
-        [userData.username, userData.password, userData.email, userData.user_image_url]
+        [
+          userData.username,
+          userData.password,
+          userData.email,
+          userData.user_image_url,
+        ]
       );
       res.status(201).json(newUser.rows[0]);
     } else {
       res.status(200).json(result.rows[0]);
     }
   } catch (error) {
-    res.status(401).json({message: "user or password is worng"})
+    res.status(401).json({ message: "Error authentication using google" });
   }
 });
+
+app.post("/api/auth/github", async (req, res) => {
+  const userData = req.body;
+  try {
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [
+      userData.email,
+    ]);
+    if (result.rows.length === 0) {
+      const newUser = await db.query(
+        "INSERT INTO users(username, password, email, user_image_url) VALUES($1, $2, $3, $4) RETURNING *",
+        [
+          userData.username,
+          userData.password,
+          userData.email,
+          userData.user_image_url,
+        ]
+      );
+      res.status(201).json(newUser.rows[0]);
+    } else {
+      res.status(200).json(result.rows[0]);
+    }
+  } catch (error) {
+    res.status(401).json({ message: "Error authentication using google" });
+  }
+});
+
 
 app.get("/api/user/:id", async (req, res) => {
   try {
@@ -167,7 +198,7 @@ app.post("/add", async (req, res) => {
   const rawStartDate = req.body.starting_date;
   const rawEndDate = req.body.ending_date;
 
-  const startDate = rawStartDate ? rawStartDate : null; 
+  const startDate = rawStartDate ? rawStartDate : null;
   const endDate = rawEndDate ? rawEndDate : null;
 
   const userPost = {

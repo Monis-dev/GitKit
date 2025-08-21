@@ -10,6 +10,7 @@ import session from "express-session";
 import passport from "passport";
 import { Strategy } from "passport-local";
 import GoogleStrategy from "passport-google-oauth2";
+import GitHubStrategy from "passport-github2";
 import { userInfo } from "os";
 import { error } from "console";
 import flash from "connect-flash";
@@ -124,12 +125,30 @@ app.get(
   })
 );
 
+app.get(
+  "/auth/github",
+  passport.authenticate("github", {
+    scope: ["profile", "email"],
+  })
+);
+
+app.get(
+  "/auth/github/callback",
+  passport.authenticate("github", {
+    successRedirect: "/home",
+    failureRedirect: "/login",
+  })
+);
+
 //get home page
 app.get("/home", async (req, res) => {
   try {
     if (req.isAuthenticated()) {
       const response = await axios.get(`${API_URL}/home?userId=${req.user.id}`);
-      res.render("index.ejs", { storeData: response.data, currentUser: req.user });
+      res.render("index.ejs", {
+        storeData: response.data,
+        currentUser: req.user,
+      });
     } else {
       res.redirect("/");
     }
@@ -140,8 +159,8 @@ app.get("/home", async (req, res) => {
 
 //render add page
 app.get("/add", (req, res) => {
-  console.log(req.user)
-  res.render("modify.ejs",{currentUser: req.user});
+  console.log(req.user);
+  res.render("modify.ejs", { currentUser: req.user });
 });
 
 //upload data
@@ -177,7 +196,7 @@ app.get("/edit/:id", async (req, res) => {
     const response = await axios.get(
       `${API_URL}/home/${parseInt(req.params.id)}`
     );
-    res.render("modify.ejs", { data: response.data, currentUser: req.user});
+    res.render("modify.ejs", { data: response.data, currentUser: req.user });
   } catch (error) {
     res.status(500).json({ message: "Error fetching post" });
   }
@@ -236,18 +255,18 @@ passport.use(
   "google",
   new GoogleStrategy(
     {
-      clientID: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "http://localhost:3000/auth/google/callback",
     },
     async (acessToken, refreshToken, profile, cb) => {
-      console.log(profile);
+      // console.log(profile);
       try {
         const userData = {
           username: profile.displayName,
           password: "google",
           email: profile.emails[0].value,
-          user_image_url: profile.photos[0].value
+          user_image_url: profile.photos[0].value,
         };
         const response = await axios.post(
           `${API_URL}/api/auth/google`,
@@ -257,6 +276,33 @@ passport.use(
       } catch (error) {
         console.log(error);
         return cb(null, false);
+      }
+    }
+  )
+);
+
+passport.use(
+  "github",
+  new GitHubStrategy(
+    {
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: "http://localhost:3000/auth/github/callback",
+    },
+    async (acessToken, refreshToken, profile, cb) => {
+      // console.log(profile);
+      try {
+        const userData = {
+          username: profile.displayName,
+          password: "Github",
+          email: profile.emails[0].value,
+          user_image_url: profile.photos[0].value
+        }
+        const response = await axios.post(`${API_URL}/api/auth/github`, userData);
+        return cb(null, response.data)
+      } catch (error) {
+        console.log(error)
+        return cb(null, false)
       }
     }
   )
