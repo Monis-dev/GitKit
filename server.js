@@ -8,6 +8,7 @@ import multer from "multer";
 const app = express();
 const port = 4000;
 const saltRounds = 10;
+const {Pool} = pg;
 env.config();
 
 app.use(express.static("public"));
@@ -28,7 +29,7 @@ const upload = multer({ storage: storage });
 
 const storeData = []; //to show all the blog post
 
-const db = new pg.Client({
+const db = new Pool({
   user: process.env.PG_USER,
   host: process.env.PG_HOST,
   database: process.env.PG_DATABASE,
@@ -149,6 +150,30 @@ app.post("/api/auth/github", async (req, res) => {
   }
 });
 
+app.patch("/user/github/:id/link-github", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { github_id, github_username, github_access_token } = req.body;
+    console.log(userId);
+    const result = await db.query(
+      "UPDATE users SET github_id = $1, github_username = $2, github_access_token = $3 WHERE id = $4 RETURNING *",
+      [github_id, github_username, github_access_token, userId]
+    );
+    console.log("--- DATA FOR UPDATE QUERY ---");
+    console.log(`userId: ${userId} (Type: ${typeof userId})`);
+    console.log(`github_id: ${github_id} (Type: ${typeof github_id})`);
+    console.log(
+      `github_username: ${github_username} (Type: ${typeof github_username})`
+    );
+    console.log(
+      `github_access_token: ${github_access_token} (Type: ${typeof github_access_token})`
+    );
+    console.log("----------------------------");
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    res.status(401).json({ message: "Error authentication using google" });
+  }
+});
 
 app.get("/api/user/:id", async (req, res) => {
   try {
@@ -226,7 +251,7 @@ app.post("/add", async (req, res) => {
   res.status(202).json(result.rows);
 });
 
-app.patch("/home/:id", async (req, res) => {
+app.patch("/api/home/:id", async (req, res) => {
   try {
     const postId = parseInt(req.params.id);
     const userId = req.body.userId;

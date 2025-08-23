@@ -140,6 +140,21 @@ app.get(
   })
 );
 
+app.get(
+  "/connect/github",
+  passport.authorize("github", {
+    scope: ["repo"],
+  })
+);
+
+app.get(
+  "/connect/github/callback",
+  passport.authorize("github"),
+  (req, res) => {
+    res.redirect("/home");
+  }
+);
+
 //get home page
 app.get("/home", async (req, res) => {
   try {
@@ -209,7 +224,10 @@ app.patch("/api/home/:id", upload.single("image"), async (req, res) => {
     if (req.file) {
       updatedData.image_path = req.file.path;
     }
-    await axios.patch(`${API_URL}/home/${Number(req.params.id)}`, updatedData);
+    await axios.patch(
+      `${API_URL}/api/home/${Number(req.params.id)}`,
+      updatedData
+    );
     res.redirect("/home");
   } catch (error) {
     res.status(404).json({ message: "Error loading Edited home page" });
@@ -288,21 +306,40 @@ passport.use(
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       callbackURL: "http://localhost:3000/auth/github/callback",
+      passReqToCallback: true,
     },
-    async (acessToken, refreshToken, profile, cb) => {
+    async (req, acessToken, refreshToken, profile, cb) => {
       // console.log(profile);
-      try {
-        const userData = {
-          username: profile.displayName,
-          password: "Github",
-          email: profile.emails[0].value,
-          user_image_url: profile.photos[0].value
+      if (req.user) {
+        const userId = req.user.id;
+        const githubProfileData = {
+          github_id: profile.id,
+          github_username: profile.displayName,
+          github_access_token: acessToken,
+        };
+        console.log(githubProfileData);
+        const response = await axios.patch(
+          `${API_URL}/user/github/${userId}/link-github`,
+          githubProfileData
+        );
+        return cb(null, req.user);
+      } else {
+        try {
+          const userData = {
+            username: profile.displayName,
+            password: "Github",
+            email: profile.emails[0].value,
+            user_image_url: profile.photos[0].value,
+          };
+          const response = await axios.post(
+            `${API_URL}/api/auth/github`,
+            userData
+          );
+          return cb(null, response.data);
+        } catch (error) {
+          console.log(error);
+          return cb(null, false);
         }
-        const response = await axios.post(`${API_URL}/api/auth/github`, userData);
-        return cb(null, response.data)
-      } catch (error) {
-        console.log(error)
-        return cb(null, false)
       }
     }
   )
