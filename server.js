@@ -4,6 +4,7 @@ import pg from "pg";
 import env from "dotenv";
 import bcrypt, { hash } from "bcrypt";
 import multer from "multer";
+import { Octokit } from "@octokit/core";
 
 const app = express();
 const port = 4000;
@@ -159,21 +160,41 @@ app.patch("/user/github/:id/link-github", async (req, res) => {
       "UPDATE users SET github_id = $1, github_username = $2, github_access_token = $3 WHERE id = $4 RETURNING *",
       [github_id, github_username, github_access_token, userId]
     );
-    console.log("--- DATA FOR UPDATE QUERY ---");
-    console.log(`userId: ${userId} (Type: ${typeof userId})`);
-    console.log(`github_id: ${github_id} (Type: ${typeof github_id})`);
-    console.log(
-      `github_username: ${github_username} (Type: ${typeof github_username})`
-    );
-    console.log(
-      `github_access_token: ${github_access_token} (Type: ${typeof github_access_token})`
-    );
-    console.log("----------------------------");
     res.status(200).json(result.rows[0]);
   } catch (error) {
     res.status(401).json({ message: "Error authentication using google" });
   }
 });
+
+app.post("/github/commit/user/:id", async(req,res)=>{
+  try {
+    const userId = req.params.id;
+    const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [userId])
+    if(userDetails.rows.length != 0){
+      const user = userDetails.rows[0]
+      const octokit = new Octokit({
+        auth: user.github_access_token,
+      });
+      await octokit.request("POST /user/repos", {
+        name: "Working",
+        description: "This is your first repository",
+        homepage: "https://github.com",
+        private: false,
+        has_issues: true,
+        has_projects: true,
+        has_wiki: true,
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      });
+      res.status(201).json({message: "commit successful"})
+    } else {
+      res.status(403).json("User fail to authorize webapp to access user github")
+    }
+  } catch (error) {
+    res.status(400).json({message: "faild to commit"})
+  }
+})
 
 app.get("/api/user/:id", async (req, res) => {
   try {

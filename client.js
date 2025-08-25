@@ -56,6 +56,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+// app.use((req, res, next) => {
+//   console.log(`--> INCOMING REQUEST: ${req.method} ${req.originalUrl}`);
+//   next();
+// });
+
 app.get("/", (req, res) => {
   const errorMessage = req.flash("error");
   res.render("loginPage.ejs", {
@@ -206,6 +211,24 @@ app.post("/api/home", upload.single("image"), async (req, res) => {
 
 //render edit page
 
+app.post("/github/commit", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      console.log("user is authenticated");
+      const userId = req.user.id
+      const response = await axios.post(`${API_URL}/github/commit/user/${userId}`);
+      console.log("Backend call successful. Redirecting to home.");
+      req.flash("success", "Successfully created GitHub repository!"); // Optional success message
+      res.redirect("/home");
+    } else {
+      res.redirect("/")
+    }
+  } catch (error) {
+    res.redirect("/home")
+    console.log(error);
+  }
+});
+
 app.get("/edit/:id", async (req, res) => {
   try {
     const response = await axios.get(
@@ -317,7 +340,7 @@ passport.use(
           github_username: profile.displayName,
           github_access_token: acessToken,
         };
-        console.log(githubProfileData);
+        // console.log(githubProfileData);
         const response = await axios.patch(
           `${API_URL}/user/github/${userId}/link-github`,
           githubProfileData
