@@ -14,7 +14,7 @@
           name="name"
           class="rounded-4"
           required
-          value="<%= currentUser.username %>"
+          value="<%= project.name %>"
         />
       </div>
       <div class="title-panel d-flex flex-column mb-3">
@@ -131,20 +131,22 @@
         </div>
       </div>
     </div>
-    </form>
-    <div
-      class="d-grid gap-2 d-sm-flex mb-3 mt-3 button-group justify-content-between"
-    >
-      <a href="/add">
+    <a href="/add">
         <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">
           <%= buttonText %>
         </button>
       </a>
-      <form action="/github/commit" method="post">
+    </form>
+    <% if (isEditing) { %>
+    <div
+      class="d-grid gap-2 d-sm-flex mb-3 mt-3 button-group justify-content-between"
+    >
+      <form action="/github/commit/<%= project.id %>" method="post">
         <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">
           Commit
         </button>
       </form>
     </div>
+    <% } %>
   
 </div>

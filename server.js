@@ -9,7 +9,7 @@ import { Octokit } from "@octokit/core";
 const app = express();
 const port = 4000;
 const saltRounds = 10;
-const {Pool} = pg;
+const { Pool } = pg;
 env.config();
 
 app.use(express.static("public"));
@@ -134,12 +134,15 @@ app.post("/api/auth/github", async (req, res) => {
     ]);
     if (result.rows.length === 0) {
       const newUser = await db.query(
-        "INSERT INTO users(username, password, email, user_image_url) VALUES($1, $2, $3, $4) RETURNING *",
+        "INSERT INTO users(username, password, email, user_image_url, github_id, github_username, github_access_token) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *",
         [
           userData.username,
           userData.password,
           userData.email,
           userData.user_image_url,
+          userData.github_id,
+          userData.github_username,
+          userData.github_access_token
         ]
       );
       res.status(201).json(newUser.rows[0]);
@@ -147,7 +150,7 @@ app.post("/api/auth/github", async (req, res) => {
       res.status(200).json(result.rows[0]);
     }
   } catch (error) {
-    res.status(401).json({ message: "Error authentication using google" });
+    res.status(401).json({ message: "Error authentication using github" });
   }
 });
 
@@ -166,35 +169,58 @@ app.patch("/user/github/:id/link-github", async (req, res) => {
   }
 });
 
-app.post("/github/commit/user/:id", async(req,res)=>{
+app.post("/github/commit/user", async (req, res) => {
   try {
-    const userId = req.params.id;
-    const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [userId])
-    if(userDetails.rows.length != 0){
-      const user = userDetails.rows[0]
-      const octokit = new Octokit({
-        auth: user.github_access_token,
-      });
-      await octokit.request("POST /user/repos", {
-        name: "Working",
-        description: "This is your first repository",
-        homepage: "https://github.com",
-        private: false,
-        has_issues: true,
-        has_projects: true,
-        has_wiki: true,
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-      });
-      res.status(201).json({message: "commit successful"})
-    } else {
-      res.status(403).json("User fail to authorize webapp to access user github")
+    const {userId, postId} = req.body
+    console.log(postId)
+    const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [
+      userId,
+    ]);
+    try {
+      const postDetails = await db.query("SELECT * FROM post WHERE id = $1", [
+        postId,
+      ]);
+      if (userDetails.rows.length != 0) {
+        if (postDetails.rows.length != 0) {
+          const user = userDetails.rows[0];
+          const post = postDetails.rows[0];
+          const octokit = new Octokit({
+            auth: user.github_access_token,
+          });
+          await octokit.request("POST /user/repos", {
+            name: post.title,
+            description: "This is your first repository",
+            homepage: "https://github.com",
+            private: false,
+            has_issues: true,
+            has_projects: true,
+            has_wiki: true,
+            headers: {
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          });
+          res
+            .status(201)
+            .json({
+              message: "commit successful",
+              redirectLink: `https://github.com/${user.github_username}/${post.title}`,
+            });
+        } else {
+          res.status(400).json({ message: "Post not found" });
+        }
+      } else {
+        res
+          .status(403)
+          .json("User fail to authorize webapp to access user github");
+      }
+    } catch (error) {
+      console.log("Post error:",error.message)
     }
   } catch (error) {
-    res.status(400).json({message: "faild to commit"})
+    console.error("Octokit API Error:", error.message);
+    res.status(400).json({ message: "faild to commit" });
   }
-})
+});
 
 app.get("/api/user/:id", async (req, res) => {
   try {

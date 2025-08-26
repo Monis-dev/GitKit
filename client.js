@@ -169,6 +169,7 @@ app.get("/home", async (req, res) => {
         storeData: response.data,
         currentUser: req.user,
       });
+      // console.log(req.user)
     } else {
       res.redirect("/");
     }
@@ -179,7 +180,7 @@ app.get("/home", async (req, res) => {
 
 //render add page
 app.get("/add", (req, res) => {
-  console.log(req.user);
+  // console.log(req.user);
   res.render("modify.ejs", { currentUser: req.user });
 });
 
@@ -211,12 +212,18 @@ app.post("/api/home", upload.single("image"), async (req, res) => {
 
 //render edit page
 
-app.post("/github/commit", async (req, res) => {
+app.post("/github/commit/:projectId", async (req, res) => {
   try {
     if (req.isAuthenticated()) {
       console.log("user is authenticated");
-      const userId = req.user.id
-      const response = await axios.post(`${API_URL}/github/commit/user/${userId}`);
+      const userId = req.user.id;
+      const postId = req.params.projectId
+      console.log("Post id:",postId)
+      console.log("user id:",userId)
+      const response = await axios.post(`${API_URL}/github/commit/user`, {
+        userId: userId,
+        postId: postId
+      });
       console.log("Backend call successful. Redirecting to home.");
       req.flash("success", "Successfully created GitHub repository!"); // Optional success message
       res.redirect("/home");
@@ -332,12 +339,12 @@ passport.use(
       passReqToCallback: true,
     },
     async (req, acessToken, refreshToken, profile, cb) => {
-      // console.log(profile);
+      console.log(profile);
       if (req.user) {
         const userId = req.user.id;
         const githubProfileData = {
           github_id: profile.id,
-          github_username: profile.displayName,
+          github_username: profile.username,
           github_access_token: acessToken,
         };
         // console.log(githubProfileData);
@@ -353,6 +360,9 @@ passport.use(
             password: "Github",
             email: profile.emails[0].value,
             user_image_url: profile.photos[0].value,
+            github_id: profile.id,
+            github_username: profile.username,
+            github_access_token: acessToken
           };
           const response = await axios.post(
             `${API_URL}/api/auth/github`,
