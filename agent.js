@@ -32,7 +32,7 @@ const SYSTEM_PROMT = {
 
     You MUST infer a complete and logical file structure based on the project description.
     For a "full-stack" application, this MUST include basic frontend files (e.g., 'public/index.html', 'public/style.css', 'public/client.js') and necessary backend files.
-    The goal is to provide a comprehensive starting point.
+    The goal is to provide a comprehensive starting point. MAKE SHURE THAT you do not provide the visual file representation
 
     EXAMPLE:
     User Input: "Name: Bob, Title: Cool Web Scraper, Description: A Python tool to scrape websites for data."
@@ -87,7 +87,6 @@ export async function runChat(Title, description, tech_used) {
   const response = result.response;
   const rawText = response.text();
 
-  // console.log(rawText);
 
   return rawText
   // while (true) {

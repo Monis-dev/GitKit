@@ -4,7 +4,7 @@ import pg from "pg";
 import env from "dotenv";
 import bcrypt, { hash } from "bcrypt";
 import multer from "multer";
-import { Octokit } from "@octokit/core";
+import { Octokit } from "@octokit/rest";
 import { runChat } from "./agent.js";
 
 const app = express();
@@ -170,7 +170,7 @@ app.patch("/user/github/:id/link-github", async (req, res) => {
   }
 });
 
-async function repoGenerator(Octokit, Response, owner, repo) {
+async function repoGenerator(octokit, Response, owner, repo) {
   const blobSHAs = [];
   for (const file of Response) {
     const blobData = await octokit.rest.git.createBlob({
@@ -193,12 +193,12 @@ async function repoGenerator(Octokit, Response, owner, repo) {
     tree: treeArray,
   });
   const treeShaData = treeData.data.sha;
-  const refData = await octokit.rest.git.getRef({
-    owner,
-    repo,
-    ref: "heads/main",
-  });
-  const parentSha = refData.data.object.sha;
+  // const refData = await octokit.rest.git.getRef({
+  //   owner,
+  //   repo,
+  //   ref: "heads/main",
+  // });
+  // const parentSha = refData.data.object.sha;
 
   const commitData = await octokit.rest.git.createCommit({
     owner,
@@ -210,7 +210,7 @@ async function repoGenerator(Octokit, Response, owner, repo) {
   return await octokit.rest.git.createRef({
     owner,
     repo,
-    ref: "heads/main",
+    ref: "refs/heads/main",
     sha: commitSha,
   });
 }
@@ -230,18 +230,18 @@ app.post("/github/commit/user", async (req, res) => {
         if (postDetails.rows.length != 0) {
           const user = userDetails.rows[0];
           const post = postDetails.rows[0];
-          const jsonResponse = await runChat(
+          const rawAIResponse = await runChat(
             post.title,
             post.description,
             post.tech_used
           );
-          console.log("--- RAW AI RESPONSE ---");
-          console.log("Type of jsonResponse:", typeof jsonResponse);
-          console.log(
-            "Full jsonResponse object:",
-            JSON.stringify(jsonResponse, null, 2)
-          );
-          console.log(jsonResponse.fileStructure);
+
+          const jsonString = rawAIResponse.match(/\{[\s\S]*\}/);
+          const cleanJson = jsonString[0];
+          const aiData = JSON.parse(cleanJson);
+          const fileStructure = aiData.fileStructure;
+          console.log(fileStructure);
+
           const octokit = new Octokit({
             auth: user.github_access_token,
           });
@@ -257,7 +257,12 @@ app.post("/github/commit/user", async (req, res) => {
               "X-GitHub-Api-Version": "2022-11-28",
             },
           });
-          // await repoGenerator(octokit, jsonResponse.fileStructure, owner, repo);
+          await repoGenerator(
+            octokit,
+            fileStructure,
+            user.github_username,
+            post.title,
+          );
           res.status(201).json({
             message: "commit successful",
             redirectLink: `https://github.com/${user.github_username}/${post.title}`,
