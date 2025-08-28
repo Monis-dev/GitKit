@@ -19,7 +19,7 @@ const SYSTEM_PROMT = {
     {
       text: `You are a project scaffolding bot. Your sole purpose is to generate a project's file structure and content, outputting everything in a strict JSON format.
 
-    The user will provide you with their name, project title, and a description. You MUST parse this information and generate a single JSON object.
+    The user will provide you with their project title, a description and technologies used by then. You MUST parse this information and generate a single JSON object.
 
     The JSON object MUST have this exact structure:
     {
@@ -64,7 +64,7 @@ const modelAck = {
   ],
 };
 
-async function runChat() {
+export async function runChat(Title, description, tech_used) {
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash-latest",
     generationConfig: {
@@ -81,65 +81,29 @@ async function runChat() {
 
   console.log("Welcome to AI Agent! Type exit to quit");
 
-  while (true) {
-    const userInput = await rl.question("You: ");
+  // const userInput = await rl.question("You: ");
+   const userInput = `Hi my project name is ${Title} and ${description}. I also used these technologies ${tech_used}`
+  const result = await chat.sendMessage(userInput);
+  const response = result.response;
+  const rawText = response.text();
 
-    if (userInput.toLowerCase() === "exit") {
-      console.log("Agent: Goodbye!");
-      rl.close();
-      break;
-    }
-    const result = await chat.sendMessage(userInput);
-    const response = result.response;
-    const rawText = response.text();
+  // console.log(rawText);
 
-    try {
-      const parsedResponse = JSON.parse(rawText);
+  return rawText
+  // while (true) {
+  //   
 
-      if (
-        parsedResponse.fileStructure &&
-        Array.isArray(parsedResponse.fileStructure)
-      ) {
-        // Find the README.md object within the fileStructure array
-        const readmeFile = parsedResponse.fileStructure.find(
-          (file) => file.path === "README.md"
-        );
+  //   if (userInput.toLowerCase() === "exit") {
+  //     console.log("Agent: Goodbye!");
+  //     rl.close();
+  //     break;
+  //   }
 
-        if (readmeFile) {
-          console.log(
-            `\n--- 📜 Generated README for ${parsedResponse.title} ---\n`
-          );
-          console.log(readmeFile.content); // Log the content of the found file
-
-          // Save the README.md file
-          await fs.writeFile("README.md", readmeFile.content);
-          console.log("\n✅ Success! The README.md file has been saved!");
-        } else {
-          console.warn(
-            "Warning: The 'fileStructure' array did not contain a 'README.md' file."
-          );
-        }
-
-        // Display the entire file structure, including the README
-        console.log(`\n--- 🗂️  Suggested Project Structure ---\n`);
-        parsedResponse.fileStructure.forEach((file) => {
-          console.log(`📄 Path: ${file.path}`);
-        });
-      } else {
-        console.warn(
-          "Warning: The AI response did not contain a valid 'fileStructure' array."
-        );
-      }
-    } catch (error) {
-      console.error(
-        "--- 🚨 Error: Failed to parse the AI response as JSON. ---"
-      );
-      console.log("Here is the raw output that caused the error:\n");
-      console.log(rawText);
-    }
-  }
+  //   console.log(rawText);
+  // }
 }
 
-runChat();
+
+// runChat();
 
 //I am Monin and i have build full stack web application called Commit, which helps developer to manage there project ideas and also provide an efficient and easy way to initialize the repositro with all the necessary file like readme file, js file or py file etc. I used nodejs and express js to build this website

@@ -5,6 +5,7 @@ import env from "dotenv";
 import bcrypt, { hash } from "bcrypt";
 import multer from "multer";
 import { Octokit } from "@octokit/core";
+import { runChat } from "./agent.js";
 
 const app = express();
 const port = 4000;
@@ -142,7 +143,7 @@ app.post("/api/auth/github", async (req, res) => {
           userData.user_image_url,
           userData.github_id,
           userData.github_username,
-          userData.github_access_token
+          userData.github_access_token,
         ]
       );
       res.status(201).json(newUser.rows[0]);
@@ -169,10 +170,55 @@ app.patch("/user/github/:id/link-github", async (req, res) => {
   }
 });
 
+async function repoGenerator(Octokit, Response, owner, repo) {
+  const blobSHAs = [];
+  for (const file of Response) {
+    const blobData = await octokit.rest.git.createBlob({
+      owner,
+      repo,
+      content: file.content,
+      encoding: "utf-8",
+    });
+    blobSHAs.push({ path: file.path, sha: blobData.data.sha });
+  }
+  const treeArray = blobSHAs.map(({ path, sha }) => ({
+    path,
+    sha,
+    mode: "100644",
+    type: "blob",
+  }));
+  const treeData = await octokit.rest.git.createTree({
+    owner,
+    repo,
+    tree: treeArray,
+  });
+  const treeShaData = treeData.data.sha;
+  const refData = await octokit.rest.git.getRef({
+    owner,
+    repo,
+    ref: "heads/main",
+  });
+  const parentSha = refData.data.object.sha;
+
+  const commitData = await octokit.rest.git.createCommit({
+    owner,
+    repo,
+    message: "Initial commit from the Project Diary",
+    tree: treeShaData,
+  });
+  const commitSha = commitData.data.sha;
+  return await octokit.rest.git.createRef({
+    owner,
+    repo,
+    ref: "heads/main",
+    sha: commitSha,
+  });
+}
+
 app.post("/github/commit/user", async (req, res) => {
   try {
-    const {userId, postId} = req.body
-    console.log(postId)
+    const { userId, postId } = req.body;
+    console.log(postId);
     const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [
       userId,
     ]);
@@ -184,6 +230,18 @@ app.post("/github/commit/user", async (req, res) => {
         if (postDetails.rows.length != 0) {
           const user = userDetails.rows[0];
           const post = postDetails.rows[0];
+          const jsonResponse = await runChat(
+            post.title,
+            post.description,
+            post.tech_used
+          );
+          console.log("--- RAW AI RESPONSE ---");
+          console.log("Type of jsonResponse:", typeof jsonResponse);
+          console.log(
+            "Full jsonResponse object:",
+            JSON.stringify(jsonResponse, null, 2)
+          );
+          console.log(jsonResponse.fileStructure);
           const octokit = new Octokit({
             auth: user.github_access_token,
           });
@@ -191,7 +249,7 @@ app.post("/github/commit/user", async (req, res) => {
             name: post.title,
             description: "This is your first repository",
             homepage: "https://github.com",
-            private: false,
+            private: true,
             has_issues: true,
             has_projects: true,
             has_wiki: true,
@@ -199,12 +257,11 @@ app.post("/github/commit/user", async (req, res) => {
               "X-GitHub-Api-Version": "2022-11-28",
             },
           });
-          res
-            .status(201)
-            .json({
-              message: "commit successful",
-              redirectLink: `https://github.com/${user.github_username}/${post.title}`,
-            });
+          // await repoGenerator(octokit, jsonResponse.fileStructure, owner, repo);
+          res.status(201).json({
+            message: "commit successful",
+            redirectLink: `https://github.com/${user.github_username}/${post.title}`,
+          });
         } else {
           res.status(400).json({ message: "Post not found" });
         }
@@ -214,7 +271,7 @@ app.post("/github/commit/user", async (req, res) => {
           .json("User fail to authorize webapp to access user github");
       }
     } catch (error) {
-      console.log("Post error:",error.message)
+      console.log("Post error:", error.message);
     }
   } catch (error) {
     console.error("Octokit API Error:", error.message);
