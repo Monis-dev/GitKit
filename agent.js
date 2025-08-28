@@ -17,7 +17,7 @@ const SYSTEM_PROMT = {
   role: "user",
   parts: [
     {
-      text: `You are a project scaffolding bot. Your sole purpose is to generate a professional README file and a suggested file structure, outputting everything in a strict JSON format.
+      text: `You are a project scaffolding bot. Your sole purpose is to generate a project's file structure and content, outputting everything in a strict JSON format.
 
     The user will provide you with their name, project title, and a description. You MUST parse this information and generate a single JSON object.
 
@@ -25,11 +25,14 @@ const SYSTEM_PROMT = {
     {
       "name": "The user's name",
       "title": "The project title",
-      "readmeText": "A complete, professionally formatted Markdown string for the README file.",
-      "fileStructure": "An array of objects, where each object represents a file with its path and sample content."
+      "fileStructure": "An array of objects, where each object represents a file with its path and content. This array MUST include an entry for 'README.md'."
     }
 
-    The 'fileStructure' value MUST be a native JSON array. Each object inside the array must contain a 'path' (string) and 'content' (string). The file content should be a simple, illustrative example.
+    The 'fileStructure' value MUST be a native JSON array. Each object inside the array must contain a 'path' (string) and 'content' (string) property. The content for 'README.md' must be a professionally formatted Markdown string containing newline characters (\\n). Other file content should be simple, illustrative examples.
+
+    You MUST infer a complete and logical file structure based on the project description.
+    For a "full-stack" application, this MUST include basic frontend files (e.g., 'public/index.html', 'public/style.css', 'public/client.js') and necessary backend files.
+    The goal is to provide a comprehensive starting point.
 
     EXAMPLE:
     User Input: "Name: Bob, Title: Cool Web Scraper, Description: A Python tool to scrape websites for data."
@@ -37,11 +40,13 @@ const SYSTEM_PROMT = {
     {
       "name": "Bob",
       "title": "Cool Web Scraper",
-      "readmeText": "# Cool Web Scraper\\n\\n## Description\\n\\nA Python tool designed to efficiently scrape websites for valuable data. It is built for speed and ease of use.\\n\\n## Features\\n* Fast and reliable scraping.\\n* Easy to configure with a JSON file.\\n* Exports data to CSV.",
       "fileStructure": [
+        {
+          "path": "README.md",
+          "content": "# Cool Web Scraper\\n\\n## Description\\n\\nA Python tool designed to efficiently scrape websites for valuable data.\\n\\n## Features\\n* Fast and reliable scraping.\\n* Easy to configure with a JSON file.\\n* Exports data to CSV."
+        },
         {"path": "scraper.py", "content": "import requests\\n\\nprint('Hello, Scraper!')"},
-        {"path": "requirements.txt", "content": "requests==2.28.0"},
-        {"path": "config.json", "content": "{ \\"url_to_scrape\\": \\"http://example.com\\" }"}
+        {"path": "requirements.txt", "content": "requests==2.28.0"}
       ]
     }
 
@@ -54,23 +59,23 @@ const modelAck = {
   role: "model",
   parts: [
     {
-      text: "Understood. I will generate a JSON object containing the README and file structure based on the user's description.",
+      text: "Understood. I will generate a JSON object containing the project name, title, and a complete fileStructure array, including the README.md file.",
     },
   ],
 };
 
 async function runChat() {
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash-latest",
     generationConfig: {
-      responseMimeType: "application/json"
-    }
-   });
+      responseMimeType: "application/json",
+    },
+  });
 
   const chat = model.startChat({
     history: [SYSTEM_PROMT, modelAck],
     generationConfig: {
-      maxOutputTokens: 600,
+      maxOutputTokens: 2048,
     },
   });
 
@@ -86,47 +91,55 @@ async function runChat() {
     }
     const result = await chat.sendMessage(userInput);
     const response = result.response;
-    const rawText = response
-      .text()
-      .replace(/```json\n|```/g, "")
-      .trim();
+    const rawText = response.text();
 
-    
     try {
-      const parsedResponse = JSON.parse(rawText)
+      const parsedResponse = JSON.parse(rawText);
 
-      if(parsedResponse.readmeText){
-        console.log(`\n--- Generated README for ${parsedResponse.title} ---\n`);
-        console.log(parsedResponse.readmeText)
-        await fs.writeFile("README.md", parsedResponse.readmeText);
-        console.log(
-          "\n✅ Success! The README.md file has been saved to your project folder!"
+      if (
+        parsedResponse.fileStructure &&
+        Array.isArray(parsedResponse.fileStructure)
+      ) {
+        // Find the README.md object within the fileStructure array
+        const readmeFile = parsedResponse.fileStructure.find(
+          (file) => file.path === "README.md"
         );
-        console.log("File Structure:", parsedResponse.fileStructure)
+
+        if (readmeFile) {
+          console.log(
+            `\n--- 📜 Generated README for ${parsedResponse.title} ---\n`
+          );
+          console.log(readmeFile.content); // Log the content of the found file
+
+          // Save the README.md file
+          await fs.writeFile("README.md", readmeFile.content);
+          console.log("\n✅ Success! The README.md file has been saved!");
+        } else {
+          console.warn(
+            "Warning: The 'fileStructure' array did not contain a 'README.md' file."
+          );
+        }
+
+        // Display the entire file structure, including the README
+        console.log(`\n--- 🗂️  Suggested Project Structure ---\n`);
+        parsedResponse.fileStructure.forEach((file) => {
+          console.log(`📄 Path: ${file.path}`);
+        });
       } else {
-        console.error(
-          "Error: The AI response was valid JSON but missing the 'readmeText' field."
+        console.warn(
+          "Warning: The AI response did not contain a valid 'fileStructure' array."
         );
       }
-      // if (parsedResponse.fileStructure && Array.isArray(parsedResponse.fileStructure)) {
-      //   console.log(`\n--- 🗂️ Suggested File Structure ---\n`);
-      //   parsedResponse.fileStructure.forEach(file => {
-      //     console.log(`📄 Path: ${file.path}`);
-      //     console.log(`   Content: "${file.content.substring(0, 50)}..."`); // Show a snippet
-      //   });
-      //   console.log("\n✅ Successfully generated project structure!");
-      // } else {
-      //    console.warn("Warning: The AI response did not contain a valid 'fileStructure' array.");
-      // }
     } catch (error) {
-      console.error("--- Error: Failed to parse the AI response as JSON. ---");
-      console.log(
-        "The AI did not follow formatting instructions. Here is the raw output:\n"
+      console.error(
+        "--- 🚨 Error: Failed to parse the AI response as JSON. ---"
       );
+      console.log("Here is the raw output that caused the error:\n");
       console.log(rawText);
     }
-
   }
 }
 
 runChat();
+
+//I am Monin and i have build full stack web application called Commit, which helps developer to manage there project ideas and also provide an efficient and easy way to initialize the repositro with all the necessary file like readme file, js file or py file etc. I used nodejs and express js to build this website
