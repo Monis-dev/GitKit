@@ -193,21 +193,22 @@ async function repoGenerator(octokit, Response, owner, repo) {
     tree: treeArray,
   });
   const treeShaData = treeData.data.sha;
-  // const refData = await octokit.rest.git.getRef({
-  //   owner,
-  //   repo,
-  //   ref: "heads/main",
-  // });
-  // const parentSha = refData.data.object.sha;
+  const refData = await octokit.rest.git.getRef({
+    owner,
+    repo,
+    ref: "heads/main",
+  });
+  const parentSha = refData.data.object.sha;
 
   const commitData = await octokit.rest.git.createCommit({
     owner,
     repo,
     message: "Initial commit from the Project Diary",
     tree: treeShaData,
+    parent: [parentSha]
   });
   const commitSha = commitData.data.sha;
-  return await octokit.rest.git.createRef({
+  return await octokit.rest.git.updateRef({
     owner,
     repo,
     ref: "refs/heads/main",
@@ -256,6 +257,18 @@ app.post("/github/commit/user", async (req, res) => {
             headers: {
               "X-GitHub-Api-Version": "2022-11-28",
             },
+          });
+          const removedObject = fileStructure.splice(0,1);
+          const readmeFileObject = removedObject[0]
+          const readmeString = readmeFileObject.content;
+          const encodedReadmeString = Buffer.from(readmeString).toString('base64')
+          await octokit.rest.repos.createOrUpdateFileContents({
+            owner: user.github_username,
+            repo: post.title,
+            path: readmeFileObject.path,
+            message: "Initial commit form the Project Diary",
+            content: encodedReadmeString,
+            branch: 'main'
           });
           await repoGenerator(
             octokit,

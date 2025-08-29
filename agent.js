@@ -32,7 +32,9 @@ const SYSTEM_PROMT = {
 
     You MUST infer a complete and logical file structure based on the project description.
     For a "full-stack" application, this MUST include basic frontend files (e.g., 'public/index.html', 'public/style.css', 'public/client.js') and necessary backend files.
-    The goal is to provide a comprehensive starting point. MAKE SHURE THAT you do not provide the visual file representation
+    The goal is to provide a comprehensive starting point. MAKE SHURE THAT you do not provide the visual file representation in the readme content.
+
+    !Important: made the readme text a bit longer with details of what the project is about and how it can help others.
 
     EXAMPLE:
     User Input: "Name: Bob, Title: Cool Web Scraper, Description: A Python tool to scrape websites for data."
