@@ -187,32 +187,43 @@ async function repoGenerator(octokit, Response, owner, repo) {
     mode: "100644",
     type: "blob",
   }));
-  const treeData = await octokit.rest.git.createTree({
-    owner,
-    repo,
-    tree: treeArray,
-  });
-  const treeShaData = treeData.data.sha;
-  const refData = await octokit.rest.git.getRef({
-    owner,
-    repo,
-    ref: "heads/main",
-  });
-  const parentSha = refData.data.object.sha;
-  const commitData = await octokit.rest.git.createCommit({
-    owner,
-    repo,
-    message: "Initial commit from the Project Diary",
-    tree: treeShaData,
-    // parents: [parentSha]
-  });
-  const commitSha = commitData.data.sha;
-  return await octokit.rest.git.createRef({
-    owner,
-    repo,
-    ref: "refs/heads/main",
-    sha: commitSha,
-  });
+  try {
+    const refData = await octokit.rest.git.getRef({
+      owner,
+      repo,
+      ref: "heads/main",
+    });
+    const parentSha = refData.data.object.sha;
+    const parentCommit = await octokit.rest.git.getCommit({
+      owner,
+      repo,
+      commit_sha: parentSha,
+    });
+    const treeData = await octokit.rest.git.createTree({
+      owner,
+      repo,
+      tree: treeArray,
+      base_tree: parentCommit.data.tree.sha,
+    });
+    const treeShaData = treeData.data.sha;
+    const commitData = await octokit.rest.git.createCommit({
+      owner,
+      repo,
+      message: "Initial commit from the Project Diary",
+      tree: treeShaData,
+      parents: [parentSha],
+    });
+    const commitSha = commitData.data.sha;
+    return await octokit.rest.git.updateRef({
+      owner,
+      repo,
+      ref: "heads/main",
+      sha: commitSha,
+      force: false,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 app.post("/github/commit/user", async (req, res) => {
@@ -245,10 +256,21 @@ app.post("/github/commit/user", async (req, res) => {
           const octokit = new Octokit({
             auth: user.github_access_token,
           });
+
+          const repoName = post.title
+            .replace(/\s+/g, "-")
+            .replace(/[^a-zA-Z0-9-_]/g, "")
+            .replace(/--+/g, "-")
+            .replace(/^-|-$/g, '');
+
+          const sanitizationDecription = post.description
+            .replace(/[\n\r\t]/g, ' ')
+            .replace(/[\s+]/g, ' ')
+            .trim();
           const repoCreationResponse = await octokit.request(
             "POST /user/repos",
             {
-              name: post.title,
+              name: repoName,
               description: "This is your first repository",
               homepage: "https://github.com",
               private: true,
@@ -261,28 +283,59 @@ app.post("/github/commit/user", async (req, res) => {
               },
             }
           );
-          console.log("Owner", repoCreationResponse.data.owner.login);
-          console.log("Repo name:", repoCreationResponse.data.name  );
-          const removedObject = fileStructure.splice(0,1);
-          const readmeFileObject = removedObject[0]
-          const readmeString = readmeFileObject.content;
-          const encodedReadmeString = Buffer.from(readmeString).toString('base64')
-          await octokit.rest.repos.createOrUpdateFileContents({
-            owner: repoCreationResponse.data.owner.login,
-            repo: repoCreationResponse.data.name,
-            path: readmeFileObject.path,
-            message: "Initial commit form the Project Diary",
-            content: encodedReadmeString,
-            branch: "main",
-          });
-          console.log("Waiting for 2 seconds to allow ref to propagate...");
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          await repoGenerator(
-            octokit,
-            fileStructure,
-            repoCreationResponse.data.owner.login,
-            repoCreationResponse.data.name
+          // console.log("Owner", repoCreationResponse.data.owner.login);
+          // console.log("Repo name:", repoCreationResponse.data.name);
+
+          console.log("Waiting for 3 seconds to allow ref to propagate...");
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+
+          const readmeIndex = fileStructure.findIndex(
+            (file) => file.path.toLowerCase() === "readme.md"
           );
+          if (readmeIndex > -1) {
+            const removedObject = fileStructure.splice(0, 1);
+            const readmeFileObject = removedObject[0];
+            const readmeString = readmeFileObject.content;
+            const encodedReadmeString =
+              Buffer.from(readmeString).toString("base64");
+            try {
+              const currentReadme = await octokit.rest.repos.getContent({
+                owner: repoCreationResponse.data.owner.login,
+                repo: repoCreationResponse.data.name,
+                path: "README.md",
+              });
+              await octokit.rest.repos.createOrUpdateFileContents({
+                owner: repoCreationResponse.data.owner.login,
+                repo: repoCreationResponse.data.name,
+                path: readmeFileObject.path,
+                message: "Updated commit form the Project Diary",
+                content: encodedReadmeString,
+                sha: currentReadme.data.sha,
+                branch: "main",
+              });
+              console.log("Readme file sucessfully updated");
+            } catch (error) {
+              await octokit.rest.repos.createOrUpdateFileContents({
+                owner: repoCreationResponse.data.owner.login,
+                repo: repoCreationResponse.data.name,
+                message: "Initial commit form the Project Diary",
+                content: encodedReadmeString,
+              });
+              console.log("Readme file sucessfully uploaded");
+            }
+          }
+          if (fileStructure.length > 0) {
+            console.log("Waiting for 2 seconds to allow ref to propagate...");
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await repoGenerator(
+              octokit,
+              fileStructure,
+              repoCreationResponse.data.owner.login,
+              repoCreationResponse.data.name
+            );
+            console.log("All files added successfully");
+          }
+
           res.status(201).json({
             message: "commit successful",
             redirectLink: `https://github.com/${user.github_username}/${post.title}`,
