@@ -1,59 +1,91 @@
-*{
-  margin: 0%;
-  padding: 0%;
+* {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
-body{
-  overflow: hidden;
-  font-family: "Funnel Display", sans-serif;
+
+body {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
   font-size: 1rem;
-  background-image: url('/images/main.jpg');
-  background-size: cover;
-  background-position: center;
-  color: rgb(14, 28, 28);
+  line-height: 1.6;
+  background-color: #3f3c6d; 
+  color: #f0f2f5;   overflow: hidden;
 }
-.body_main{
+
+.top-header {
+  height: 60px;
+  flex-shrink: 0;
+  background-color: rgb(21, 21, 21);
+  color: #ffffff;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  height: 100vh;
-  
-}
-.main_container{
-  height: 100%;
-  width: 60%;
-  background-color: aliceblue;
-  font-family: "Baloo Bhaijaan 2", serif;
-  border-bottom: 1px solid #eee;
+  padding: 0 2rem;
 }
 
-.main_container > *{
-  margin-top: 1.5rem;
-}
-
-.options{
+.app-content-area {
   display: flex;
-  flex-direction: row-reverse;
-  gap: 1.5rem;
+  height: calc(100vh - 60px);
 }
 
-ul {
+.sidebar-nav {
+  height: 100%;
+  flex-shrink: 0;
+  background-color: rgb(21, 21, 21);
+}
+
+.main-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  background-color: rgb(31, 31, 31);
+}
+
+.projects-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
   list-style-type: none;
 }
 
-.main_container li {
-  border-bottom: 1px solid #a4d6d9;
-  
+.project-item {
+  width: 350px;
+  background: rgba(25, 25, 25, 0); /* Semi-transparent white */
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-p{
-  font-size: large;
+.project-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px #9ABDD5; 
+  cursor: pointer;
 }
 
-button{
-  border: 0cap;
-  padding: 0.5rem;
-  background-color: rgba(201, 235, 246, 0.449);
-  box-shadow: 0 14px 28px rgba(0,0,0,.15),
-                0 10px 10px rgba(0,0,0,.01);;
+.project-item > a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 1.5rem;
 }
+
+.project-item h3 {
+  margin-bottom: 0.75rem;
+  color: #ffffff;
+}
+
+.project-item .meta-info {
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
