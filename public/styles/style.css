@@ -27,7 +27,7 @@ body {
   background-color: rgb(21, 21, 21);
 }
 
-form {
+.edit_container {
   background-color: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(2px);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -36,7 +36,7 @@ form {
   padding: 2rem; /* Optional */
 }
 
-form:hover {
+.edit_container:hover {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
