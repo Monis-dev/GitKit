@@ -132,21 +132,70 @@
       </div>
     </div>
     <a href="/add">
-        <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">
-          <%= buttonText %>
-        </button>
-      </a>
-    </form>
-    <% if (isEditing) { %>
-    <div
-      class="d-grid gap-2 d-sm-flex mb-3 mt-3 button-group justify-content-between"
+      <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">
+        <%= buttonText %>
+      </button>
+    </a>
+  </form>
+  <% if (isEditing) { %>
+  <div
+    class="d-grid gap-2 d-sm-flex mb-3 mt-3 button-group justify-content-between"
+  >
+    <button
+      type="submit"
+      class="btn btn-primary btn-lg px-4 gap-3"
+      id="commitButton"
+      data-bs-toggle="modal"
+      data-bs-target="#exampleModalCenter"
     >
-      <form action="/github/commit/<%= project.id %>" method="post">
-        <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">
-          Commit
-        </button>
-      </form>
+      Commit
+    </button>
+  </div>
+  <% } %>
+  <div
+    class="modal fade"
+    id="exampleModalCenter"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="background-color: rgba(0, 0, 0, 0.55);">
+        <div class="modal-header justify-content-between">
+          <h5
+            class="modal-title"
+            id="exampleModalLongTitle"
+          >
+            Commit
+          </h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+            style="background-color: rgba(255, 255, 255, 0); border: 0px;"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">How would you like the Repository to be created</div>
+        <div class="modal-footer justify-content-center">
+          <form action="/github/commit/<%= project.id %>" method="post">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bsa-dismiss="modal"
+            >
+              Starter Pack
+            </button>
+          </form>
+          <button type="button" class="btn btn-primary">
+            Complete Repository
+          </button>
+        </div>
+      </div>
     </div>
-    <% } %>
-  
+  </div>
 </div>
+
