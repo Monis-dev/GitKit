@@ -218,11 +218,13 @@ app.post("/github/commit/:projectId", async (req, res) => {
       console.log("user is authenticated");
       const userId = req.user.id;
       const postId = req.params.projectId
-      console.log("Post id:",postId)
-      console.log("user id:",userId)
+      const packType = req.body.packType
+      // console.log("Post id:",postId)
+      console.log("pack:",packType)
       const response = await axios.post(`${API_URL}/github/commit/user`, {
         userId: userId,
-        postId: postId
+        postId: postId,
+        packType: packType
       });
       console.log("Backend call successful. Redirecting to home.");
       req.flash("success", "Successfully created GitHub repository!"); // Optional success message

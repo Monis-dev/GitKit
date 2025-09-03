@@ -228,8 +228,8 @@ async function repoGenerator(octokit, Response, owner, repo) {
 
 app.post("/github/commit/user", async (req, res) => {
   try {
-    const { userId, postId } = req.body;
-    console.log(postId);
+    const { userId, postId, packType } = req.body;
+    console.log(packType);
     const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [
       userId,
     ]);
@@ -242,6 +242,7 @@ app.post("/github/commit/user", async (req, res) => {
           const user = userDetails.rows[0];
           const post = postDetails.rows[0];
           const rawAIResponse = await runChat(
+            packType,
             post.title,
             post.description,
             post.tech_used

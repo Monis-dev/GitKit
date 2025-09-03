@@ -131,11 +131,13 @@
         </div>
       </div>
     </div>
-    <a href="/add">
-      <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">
-        <%= buttonText %>
-      </button>
-    </a>
+    <div style="display: flex; justify-content: center; align-items: center">
+      <a href="/add">
+        <button type="submit" class="btn btn-primary btn-lg px-4 gap-3 mt-5">
+          <%= buttonText %>
+        </button>
+      </a>
+    </div>
   </form>
   <% if (isEditing) { %>
   <div
@@ -186,60 +188,24 @@
             class="commit-form"
           >
             <button
-              type="button"
+              type="submit"
               class="btn btn-secondary fs-5"
               data-bsa-dismiss="modal"
-              data-bs-toggle="modal"
-              data-bs-target="#modalSheet"
+              name="packType"
+              value="starter"
             >
               Starter Pack
             </button>
+
+            <button
+              type="submit"
+              class="btn btn-primary fs-5"
+              name="packType"
+              value="complete"
+            >
+              Complete Repository
+            </button>
           </form>
-          <button type="button" class="btn btn-primary fs-5">
-            Complete Repository
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div
-    class="modal fade"
-    tabindex="-1"
-    role="dialog"
-    id="modalSheet"
-  >
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content rounded-4 shadow">
-        <div class="modal-header border-bottom-0">
-          <h1 class="modal-title fs-5">Modal title</h1>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body py-0">
-          <ul style="color: black; list-style-type: none;">
-            <li><input type="radio" name="" id="">Readme File</li>
-            <li><input type="radio" name="" id="">Front-end Files</li>
-            <li><input type="radio" name="" id="">Back-end Files</li>
-            <li><input type="radio" name="" id="">Documentation</li>
-          </ul>
-        </div>
-        <div
-          class="modal-footer flex-column align-items-stretch w-100 gap-2 pb-3 border-top-0"
-        >
-          <button type="button" class="btn btn-lg btn-primary">
-            Save changes
-          </button>
-          <button
-            type="button"
-            class="btn btn-lg btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>
