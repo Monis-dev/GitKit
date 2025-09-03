@@ -22,10 +22,15 @@
     pageTitle = 'Create Project';
     formAction = '/api/home'; // Or whatever your create route is
     buttonText = 'Create Project';
- } %>
+ } 
+    const formatDateForInput = (dateString) => {
+    if (!dateString || isNaN(new Date(dateString))) return ''; 
+    return new Date(dateString).toISOString().split('T')[0];
+    };
+ %>
 
  <body>
-  <header class="top-header d-flex align-items-center px-4 border-bottom">
+  <header class="top-header">
     <h1><%= pageTitle %></h1>
   </header>
   <div class="app-content-area d-flex flex-grow-1">
@@ -35,44 +40,10 @@
         formAction: formAction,
         buttonText: buttonText,
         project: project,
-        isEditing: isEditing
+        isEditing: isEditing,
+        formatDateForInput: formatDateForInput,
     }) %></main>
-    <div class="modal modal fade" tabindex="-1" role="dialog" id="imageModal">
-      <div class="modal-dialog">
-        <div class="modal-content rounded-4 shadow">
-          <div class="modal-header border-bottom-0">
-            <h1 class="modal-title fs-5" style="color: black;">Image Preview</h1>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              data-image-path="<%= project.image_path %>"
-            ></button>
-          </div>
-          <div class="modal-body py-0">
-            <img
-              src=""
-              alt=""
-              id="modalImagePreview"
-              style="max-width: 100%; height: 100%"
-            />
-          </div>
-          <div
-            class="modal-footer flex-column align-items-stretch w-100 gap-2 pb-3 border-top-0"
-          >
-            <button
-              type="button"
-              class="btn btn-lg"
-              style="background-color: rgba(53, 25, 124, 0.715);"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
@@ -109,5 +80,6 @@
       } 
       imagePopup.show();
     });
+    
   </script>
 </body>

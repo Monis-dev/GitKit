@@ -1,46 +1,154 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* style.css - FINAL VERSION WITH LAYOUT FIXES */
+
+/* --- 1. Basic Setup & Theme Colors --- */
+:root {
+  --color-background: #111827;
+  --color-surface: #1F2937;
+  --color-border: #374151;
+  --color-primary: #3B82F6;
+  --color-text-primary: #F9FAFB;
+  --color-text-secondary: #9CA3AF;
 }
 
 body {
-  font-family: "Baloo Bhaijaan 2", sans-serif;
-  font-size: 1rem;
-  line-height: 1.6;
-  background-color: rgb(31, 31, 31);
-  color: #f0f2f5;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
 }
 
 .top-header {
-  height: 60px;
+  height: 65px;
   flex-shrink: 0;
-  background-color: rgb(21, 21, 21);
-  color: #ffffff;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
-  padding: 0 2rem;
+  justify-content: space-between; 
+  padding: 0 24px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.sidebar-nav {
-  flex-shrink: 0;
-  background-color: rgb(21, 21, 21);
+.top-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+}
+/* --- 2. THE CORRECTED TWO-COLUMN PAGE LAYOUT --- */
+.form-page-layout {
+  display: flex;
+  justify-content: center; /* Center the columns in the available space */
+  align-items: flex-start;
+  gap: 32px;
+  padding: 32px;
+}
+
+.form-column {
+  flex: 4; /* It will try to be twice as big as the commit column */
+  max-width: 800px;
+  margin-left: 2rem;
+}
+
+#commit_button {
+  flex: 1;
+  max-width: 350px;
 }
 
 .edit_container {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(2px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 10px; /* Optional */
-  padding: 2rem; /* Optional */
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 32px;
+}
+.form-column > h1 {
+  margin-bottom: 1.5rem;
 }
 
-.edit_container:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+.edit_container input[type="username"],
+.edit_container input[type="text"],
+.edit_container input[type="date"],
+.edit_container textarea {
+  width: 100%;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px !important;
+  padding: 12px;
+  font-size: 16px;
+  color: var(--color-text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-input{
-  padding: .5rem;
-  border: 0px solid;
+.edit_container input:focus, .edit_container textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.edit_container textarea { resize: vertical; }
+
+.date-panel .d-flex { gap: 16px; }
+
+/* --- 5. File Upload Area --- */
+.img-panel {
+  border: 2px dashed var(--color-border) !important;
+  background-color: var(--color-background);
+  padding: 24px;
+  transition: border-color 0.2s;
+}
+.img-panel:hover { border-color: var(--color-primary) !important; }
+
+label[for="imageInput"] {
+  background-color: var(--color-primary);
+  color: white;
+  border: none !important;
+  padding: 8px 16px !important;
+  cursor: pointer;
+  border-radius: 6px !important;
+}
+
+#viewImgBtn {
+  background: none; border: none !important; color: var(--color-primary);
+  text-decoration: underline; padding: 0 !important; cursor: pointer;
+}
+
+/* --- 6. The NEW Commit Card on the right --- */
+#commit_button {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin-top: 5.5rem !important; /* Align with the first form field */
+  /* Reset bootstrap flex properties */
+  justify-content: center !important; 
+  align-items: center;
+}
+
+#commit_button label {
+  width: 100%;
+}
+#commit_button .btn {
+  width: 100%;
+}
+
+
+/* --- 7. Final Button inside the form --- */
+.edit_container > div:last-child { justify-content: flex-end !important; }
+.edit_container > div:last-child a { display: contents; }
+
+/* --- 8. CRITICAL MOBILE RESPONSIVENESS FIX --- */
+@media (max-width: 1024px) {
+  .form-page-layout {
+    flex-direction: column; /* Stack the columns vertically */
+    align-items: center;    /* Center the stacked columns */
+    padding: 16px;
+  }
+  .form-column, #commit_button {
+    /* Make both columns take up the full available width */
+    flex: 1 1 100%; 
+    width: 100%;
+    max-width: 800px; /* Constrain width even on mobile for consistency */
+  }
+
+  #commit_button {
+    margin-top: 2rem !important; /* Reduce top margin for mobile */
+  }
 }

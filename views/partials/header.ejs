@@ -1,140 +1,56 @@
-<style>
-  .sidebar-nav .nav-link.active {
-    background-color: grey;
-    color: white;
-  }
-  .sidebar-nav .nav-link.active .bi {
-    fill: white;
-  }
-</style>
+<link rel="stylesheet" href="/styles/header.css">
 
-<div class="d-flex flex-column flex-shrink-0 sidebar-nav" style="width: 4.5rem">
-  <ul
-    class="nav nav-pills nav-flush flex-column text-center" <%# to make the element appear in the middle use flex-grow-1 justify-content-center %>
-    id="sidebar-nav-menu"
-  >
-    <li class="nav-item" id="nav-item-home">
+<div class="sidebar d-flex flex-column flex-shrink-0">
+  <ul class="nav nav-pills nav-flush flex-column text-center" id="sidebar-nav-menu">
+    <li class="nav-item">
       <a
         href="/home"
-        class="nav-link py-3 border-bottom rounded-0"
-        aria-current="page"
+        class="nav-link"
         data-bs-toggle="tooltip"
         data-bs-placement="right"
-        aria-label="Home"
-        data-bs-original-title="Home"
+        title="Home"
       >
-        <img
-          src="/images/home.png"
-          alt=""
-          class="w-100"
-          id="home-img"
-        />
-        <!-- <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          class="bi bi-house"
-          viewBox="0 0 16 16"
-          style="fill: aliceblue"
-        >
-          <path
-            d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"
-          />
-        </svg> -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+          <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5z"/>
+        </svg>
       </a>
     </li>
-    <li class="nav-item" id="nav-item-create">
+    <li class="nav-item">
       <a
         href="/add"
-        class="nav-link py-3 border-bottom rounded-0"
+        class="nav-link"
         data-bs-toggle="tooltip"
         data-bs-placement="right"
-        aria-label="Create"
-        data-bs-original-title="Create"
+        title="Create Project"
       >
-        <img
-          src="/images/notebook.png"
-          alt=""
-          class="w-100"
-          id="notebook-img"
-        />
-        <!-- <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          class="bi bi-journal-plus"
-          viewBox="0 0 16 16"
-          style="fill: aliceblue"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M8 5.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 .5-.5"
-          />
-          <path
-            d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"
-          />
-          <path
-            d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"
-          />
-        </svg> -->
+        <!-- REPLACED: img with inline SVG for better styling -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+          <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
+        </svg>
       </a>
     </li>
   </ul>
+
   <div class="dropup border-top mt-auto">
     <a
       href="#"
-      class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle"
+      class="d-flex align-items-center justify-content-center p-3 text-decoration-none dropdown-toggle"
       data-bs-toggle="dropdown"
       aria-expanded="false"
     >
       <img
         src="<%= currentUser.user_image_url %>"
-        alt="mdo"
-        width="30"
-        height="30"
+        alt="User profile picture"
+        width="32"
+        height="32"
         class="rounded-circle"
       />
     </a>
-    <ul class="dropdown-menu dropdown-menu-end text-large shadow">
-      <li class="ms-2"><span class="fw-bold">User:</span> <%= currentUser.username %></li>
+    <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+      <li><h6 class="dropdown-header">Signed in as <%= currentUser.username %></h6></li>
       <li><hr class="dropdown-divider" /></li>
       <li><a class="dropdown-item" href="/logout">Sign out</a></li>
     </ul>
   </div>
 </div>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll("#sidebar-nav-menu .nav-link");
-
-    navLinks.forEach((link) => {
-      link.classList.remove("active");
-
-      if (link.pathname === currentPath) {
-        link.classList.add("active");
-      }
-    });
-  });
-
-  const gifNoteBookPath = document.getElementById("notebook-img");
-  const gifHomePath = document.getElementById("home-img");
-  const hitboxHome = document.getElementById("nav-item-home");
-  const hitboxCreate = document.getElementById("nav-item-create");
-  const staticNotebookPath = "/images/notebook.png";
-  const animatedNotebookPath = "/images/notebook.gif";
-  const staticHomePath = "/images/home.png";
-  const animatedHomePath = "/images/home.gif";
-
-  hitboxHome.addEventListener("mouseover", () => {
-    gifHomePath.src = animatedHomePath;
-  });
-  hitboxHome.addEventListener("mouseout", () => {
-    gifHomePath.src = staticHomePath;
-  });
-  hitboxCreate.addEventListener("mouseover", () => {
-    gifNoteBookPath.src = animatedNotebookPath;
-  });
-  hitboxCreate.addEventListener("mouseout", () => {
-    gifNoteBookPath.src = staticNotebookPath;
-  });
-</script>
+<script src="/js/main.js"></script>

@@ -1,0 +1,48 @@
+.sidebar {
+  width: 72px; /* A bit wider for better spacing */
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: 16px 0; /* Vertical padding */
+}
+
+.sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  margin: 8px; /* Margin around each link */
+  border-radius: 10px; /* Rounded corners */
+  color: var(--color-text-secondary); /* Icon color is now text color */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.sidebar .nav-link .bi {
+  /* This targets the SVG icons */
+  width: 28px;
+  height: 28px;
+}
+
+/* Hover state for ANY nav link */
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* Subtle hover effect */
+  color: var(--color-text-primary);
+}
+
+/* Active state for the CURRENT page's link */
+.sidebar .nav-link.active {
+  background-color: var(--color-primary);
+  color: #ffffff; /* Make icon white on blue background */
+}
+
+/* User Dropdown Area at the bottom */
+.sidebar .dropup .dropdown-toggle::after {
+  /* Hides the default Bootstrap dropdown arrow */
+  display: none;
+}
+.sidebar .dropdown-menu {
+    /* Use Bootstrap's dark theme for the menu */
+    --bs-dropdown-bg: #2d3748;
+    --bs-dropdown-link-color: var(--color-text-primary);
+    --bs-dropdown-link-hover-bg: var(--color-primary);
+    --bs-dropdown-border-color: var(--color-border);
+}
