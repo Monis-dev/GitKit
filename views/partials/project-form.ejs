@@ -161,23 +161,21 @@
     </button>
   </div>
   <% } %>
-</div>
-
-<div
-  class="modal fade"
-  id="exampleModalCenter"
-  tabindex="-1"
-  role="dialog"
-  aria-labelledby="exampleModalCenterTitle"
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content" style="color: black">
-      <div class="modal-header justify-content-center">
-        <h5 class="modal-title fs-3 fw-bold" id="exampleModalLongTitle">
-          Commit
-        </h5>
-        <!-- <button
+  <div
+    class="modal fade"
+    id="exampleModalCenter"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="color: black">
+        <div class="modal-header justify-content-center">
+          <h5 class="modal-title fs-3 fw-bold" id="exampleModalLongTitle">
+            Commit
+          </h5>
+          <!-- <button
             type="button"
             class="close"
             data-dismiss="modal"
@@ -186,35 +184,36 @@
           >
             <span aria-hidden="true">&times;</span>
           </button> -->
-      </div>
-      <div class="modal-body fs-5" style="text-align: center">
-        How would you like the Repository to be created
-      </div>
-      <div class="modal-footer justify-content-center">
-        <form
-          action="/github/commit/<%= project.id %>"
-          method="post"
-          class="commit-form"
-        >
-          <button
-            type="submit"
-            class="btn btn-secondary fs-5"
-            data-bsa-dismiss="modal"
-            name="packType"
-            value="starter"
+        </div>
+        <div class="modal-body fs-5" style="text-align: center">
+          How would you like the Repository to be created
+        </div>
+        <div class="modal-footer justify-content-center">
+          <form
+            action="/github/commit/<%= project.id %>"
+            method="post"
+            class="commit-form"
           >
-            Starter Pack
-          </button>
+            <button
+              type="submit"
+              class="btn btn-secondary fs-5"
+              data-bsa-dismiss="modal"
+              name="packType"
+              value="starter"
+            >
+              Starter Pack
+            </button>
 
-          <button
-            type="submit"
-            class="btn btn-primary fs-5"
-            name="packType"
-            value="complete"
-          >
-            Complete Repository
-          </button>
-        </form>
+            <button
+              type="submit"
+              class="btn btn-primary fs-5"
+              name="packType"
+              value="complete"
+            >
+              Complete Repository
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   </div>

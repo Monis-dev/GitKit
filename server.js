@@ -287,8 +287,8 @@ app.post("/github/commit/user", async (req, res) => {
           // console.log("Owner", repoCreationResponse.data.owner.login);
           // console.log("Repo name:", repoCreationResponse.data.name);
 
-          console.log("Waiting for 3 seconds to allow ref to propagate...");
-          await new Promise((resolve) => setTimeout(resolve, 3000));
+          console.log("Waiting for 5 seconds to allow ref to propagate...");
+          await new Promise((resolve) => setTimeout(resolve, 5000));
 
           const readmeIndex = fileStructure.findIndex(
             (file) => file.path.toLowerCase() === "readme.md"
@@ -326,8 +326,8 @@ app.post("/github/commit/user", async (req, res) => {
             }
           }
           if (fileStructure.length > 0) {
-            console.log("Waiting for 2 seconds to allow ref to propagate...");
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            console.log("Waiting for 5 seconds to allow ref to propagate...");
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             await repoGenerator(
               octokit,
               fileStructure,
