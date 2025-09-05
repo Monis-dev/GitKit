@@ -142,6 +142,7 @@ app.get(
   passport.authenticate("github", {
     successRedirect: "/home",
     failureRedirect: "/login",
+    failureFlash: true,
   })
 );
 
@@ -165,9 +166,13 @@ app.get("/home", async (req, res) => {
   try {
     if (req.isAuthenticated()) {
       const response = await axios.get(`${API_URL}/home?userId=${req.user.id}`);
+      const errorMessage = req.flash("error")[0];
+      const successMessage = req.flash("success")[0];
       res.render("index.ejs", {
         storeData: response.data,
         currentUser: req.user,
+        errorMessage: errorMessage,
+        successMessage: successMessage
       });
       // console.log(req.user)
     } else {
@@ -215,26 +220,34 @@ app.post("/api/home", upload.single("image"), async (req, res) => {
 app.post("/github/commit/:projectId", async (req, res) => {
   try {
     if (req.isAuthenticated()) {
-      console.log("user is authenticated");
-      const userId = req.user.id;
-      const postId = req.params.projectId
-      const packType = req.body.packType
-      // console.log("Post id:",postId)
-      console.log("pack:",packType)
-      const response = await axios.post(`${API_URL}/github/commit/user`, {
-        userId: userId,
-        postId: postId,
-        packType: packType
-      });
-      console.log("Backend call successful. Redirecting to home.");
-      req.flash("success", "Successfully created GitHub repository!"); // Optional success message
-      res.redirect("/home");
+      if (req.user && req.user.github_access_token) {
+        const userId = req.user.id;
+        const postId = req.params.projectId;
+        const packType = req.body.packType;
+        const response = await axios.post(`${API_URL}/github/commit/user`, {
+          userId: userId,
+          postId: postId,
+          packType: packType,
+        });
+        console.log("Backend call successful. Redirecting to home.");
+        req.flash("success", "Successfully created GitHub repository!");
+        res.redirect("/home");
+      } else {
+        console.log("User has not connected a GitHub account");
+        const errorMessage = req.flash(
+          "error",
+          "Please connect your GitHub account first to create a repository."
+        );
+        res.redirect("/home");
+      }
     } else {
-      res.redirect("/")
+      res.redirect("/login");
+      console.log("session not found");
     }
   } catch (error) {
-    res.redirect("/home")
-    console.log(error);
+    console.error("Error in commit process:", error);
+    req.flash("error", "An unexpected error occurred. Please try again.");
+    res.redirect("/home");
   }
 });
 
@@ -364,7 +377,7 @@ passport.use(
             user_image_url: profile.photos[0].value,
             github_id: profile.id,
             github_username: profile.username,
-            github_access_token: acessToken
+            github_access_token: acessToken,
           };
           const response = await axios.post(
             `${API_URL}/api/auth/github`,
