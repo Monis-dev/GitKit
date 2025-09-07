@@ -1,0 +1,110 @@
+/* ---- Modal Overlay and Content ---- */
+.modal-overlay {
+  /* Hidden by default */
+  display: none; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 1050; /* Make sure it's on top */
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem 3rem;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+}
+
+.progress-steps {
+  list-style: none;
+  padding: 0;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.progress-steps li {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+/* --- Status Indicator (Spinner/Checkmark Container) --- */
+.status-indicator {
+  margin-right: 15px;
+  width: 25px; /* Fixed width */
+  height: 25px; /* Fixed height */
+  position: relative;
+}
+
+/* ---- The Spinner ---- */
+.spinner {
+  width: 25px;
+  height: 25px;
+  border: 3px solid #f3f3f3; /* Light grey */
+  border-top: 3px solid #3498db; /* Blue */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ---- The Checkmark (SVG) ---- */
+.checkmark {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: none; /* Hidden by default */
+  stroke-width: 3;
+  stroke: #4caf50; /* Green color */
+  stroke-miterlimit: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke: #ccc; /* Circle is grey */
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+.checkmark-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.5s forwards;
+}
+@keyframes stroke {
+  100% { stroke-dashoffset: 0; }
+}
+
+
+/* ---- The Magic: State Change on .completed class ---- */
+.progress-steps li.completed .spinner {
+  display: none; /* Hide spinner when step is done */
+}
+
+.progress-steps li.completed .checkmark {
+  display: block; /* Show checkmark when step is done */
+}
+
+.progress-steps li.completed {
+  color: #000; /* Make completed text darker */
+  font-weight: 500;
+}
