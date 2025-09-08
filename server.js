@@ -6,6 +6,7 @@ import bcrypt, { hash } from "bcrypt";
 import multer from "multer";
 import { Octokit } from "@octokit/rest";
 import { runChat } from "./agent.js";
+import axios from "axios";
 
 const app = express();
 const port = 4000;
@@ -226,135 +227,104 @@ async function repoGenerator(octokit, Response, owner, repo) {
   }
 }
 
-app.post("/github/commit/user", async (req, res) => {
+async function sendProgressUpdate(callbackURL, progressData) {
   try {
-    const { userId, postId, packType } = req.body;
-    console.log(packType);
-    const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [
-      userId,
-    ]);
-    try {
-      const postDetails = await db.query("SELECT * FROM post WHERE id = $1", [
-        postId,
-      ]);
-      if (userDetails.rows.length != 0) {
-        if (postDetails.rows.length != 0) {
-          const user = userDetails.rows[0];
-          const post = postDetails.rows[0];
-          const rawAIResponse = await runChat(
-            packType,
-            post.title,
-            post.description,
-            post.tech_used
-          );
-
-          const jsonString = rawAIResponse.match(/\{[\s\S]*\}/);
-          const cleanJson = jsonString[0];
-          const aiData = JSON.parse(cleanJson);
-          const fileStructure = aiData.fileStructure;
-          console.log(fileStructure);
-
-          const octokit = new Octokit({
-            auth: user.github_access_token,
-          });
-
-          const repoName = post.title
-            .replace(/\s+/g, "-")
-            .replace(/[^a-zA-Z0-9-_]/g, "")
-            .replace(/--+/g, "-")
-            .replace(/^-|-$/g, '');
-
-          const sanitizationDecription = post.description
-            .replace(/[\n\r\t]/g, ' ')
-            .replace(/[\s+]/g, ' ')
-            .trim();
-          const repoCreationResponse = await octokit.request(
-            "POST /user/repos",
-            {
-              name: repoName,
-              description: "This is your first repository",
-              homepage: "https://github.com",
-              private: true,
-              has_issues: true,
-              has_projects: true,
-              has_wiki: true,
-              auto_init: true,
-              headers: {
-                "X-GitHub-Api-Version": "2022-11-28",
-              },
-            }
-          );
-          // console.log("Owner", repoCreationResponse.data.owner.login);
-          // console.log("Repo name:", repoCreationResponse.data.name);
-
-          console.log("Waiting for 5 seconds to allow ref to propagate...");
-          await new Promise((resolve) => setTimeout(resolve, 5000));
-
-          const readmeIndex = fileStructure.findIndex(
-            (file) => file.path.toLowerCase() === "readme.md"
-          );
-          if (readmeIndex > -1) {
-            const removedObject = fileStructure.splice(0, 1);
-            const readmeFileObject = removedObject[0];
-            const readmeString = readmeFileObject.content;
-            const encodedReadmeString =
-              Buffer.from(readmeString).toString("base64");
-            try {
-              const currentReadme = await octokit.rest.repos.getContent({
-                owner: repoCreationResponse.data.owner.login,
-                repo: repoCreationResponse.data.name,
-                path: "README.md",
-              });
-              await octokit.rest.repos.createOrUpdateFileContents({
-                owner: repoCreationResponse.data.owner.login,
-                repo: repoCreationResponse.data.name,
-                path: readmeFileObject.path,
-                message: "Updated commit form the Project Diary",
-                content: encodedReadmeString,
-                sha: currentReadme.data.sha,
-                branch: "main",
-              });
-              console.log("Readme file sucessfully updated");
-            } catch (error) {
-              await octokit.rest.repos.createOrUpdateFileContents({
-                owner: repoCreationResponse.data.owner.login,
-                repo: repoCreationResponse.data.name,
-                message: "Initial commit form the Project Diary",
-                content: encodedReadmeString,
-              });
-              console.log("Readme file sucessfully uploaded");
-            }
-          }
-          if (fileStructure.length > 0) {
-            console.log("Waiting for 5 seconds to allow ref to propagate...");
-            await new Promise((resolve) => setTimeout(resolve, 5000));
-            await repoGenerator(
-              octokit,
-              fileStructure,
-              repoCreationResponse.data.owner.login,
-              repoCreationResponse.data.name
-            );
-            console.log("All files added successfully");
-          }
-
-          res.status(201).json({
-            message: "commit successful",
-            redirectLink: `https://github.com/${user.github_username}/${post.title}`,
-          });
-        } else {
-          res.status(400).json({ message: "Post not found" });
-        }
-      } else {
-        res
-          .status(403)
-          .json("User fail to authorize webapp to access user github");
-      }
-    } catch (error) {
-      console.log("Post error:", error.message);
-    }
+    await axios.post(callbackURL, progressData);
   } catch (error) {
-    console.error("Octokit API Error:", error.message);
-    res.status(400).json({ message: "faild to commit" });
+    console.log("Failed to send progress update:", error.message);
+  }
+}
+
+app.post("/github/commit/user", async (req, res) => {
+  const { userId, postId, packType, jobId, callbackURL } = req.body;
+
+  try {
+    res.status(202).json({ message: `Job ${jobId} accepted.` });
+    
+    const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [userId]);
+    const postDetails = await db.query("SELECT * FROM post WHERE id = $1", [postId]);
+
+    await sendProgressUpdate(callbackURL, { step: "start", message: "Fetching user & project data..." });
+    
+    if (userDetails.rows.length === 0 || postDetails.rows.length === 0) {
+      throw new Error("User or Post not found in the database.");
+    }
+    
+    const user = userDetails.rows[0];
+    const post = postDetails.rows[0];
+
+    await sendProgressUpdate(callbackURL, { step: "ai", message: "Generating file structure with AI..." });
+    const rawAIResponse = await runChat(packType, post.title, post.description, post.tech_used);
+
+    const jsonString = rawAIResponse.match(/\{[\s\S]*\}/);
+    if (!jsonString) {
+      throw new Error("Could not parse a valid JSON structure from the AI response.");
+    }
+    const cleanJson = jsonString[0];
+    const aiData = JSON.parse(cleanJson);
+    const fileStructure = aiData.fileStructure;
+
+    const sanitizedFileStructure = fileStructure
+      .filter(file => file.path && file.path.trim() !== '' && !file.path.endsWith('/'));
+    
+    const octokit = new Octokit({ auth: user.github_access_token });
+    const repoName = post.title.replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-');
+
+    await sendProgressUpdate(callbackURL, { step: "repo_create", message: "Creating GitHub repository..." });
+    const repoCreationResponse = await octokit.request("POST /user/repos", {
+      name: repoName,
+      description: "This is your first repository",
+      private: true,
+      auto_init: true,
+    });
+    
+    await new Promise((resolve) => setTimeout(resolve, 3000)); 
+
+    const readmeIndex = sanitizedFileStructure.findIndex((file) => file.path.toLowerCase() === "readme.md");
+    await sendProgressUpdate(callbackURL, { step: "readme", message: "Updating README.md..." });
+    if (readmeIndex > -1) {
+        const readmeFileObject = sanitizedFileStructure[readmeIndex]; 
+        const encodedReadmeString = Buffer.from(readmeFileObject.content).toString("base64");
+        const { data: currentReadme } = await octokit.rest.repos.getContent({
+            owner: repoCreationResponse.data.owner.login,
+            repo: repoCreationResponse.data.name,
+            path: "README.md",
+        });
+        await octokit.rest.repos.createOrUpdateFileContents({
+            owner: repoCreationResponse.data.owner.login,
+            repo: repoCreationResponse.data.name,
+            path: "README.md",
+            message: "Update README.md from Project Diary",
+            content: encodedReadmeString,
+            sha: currentReadme.sha,
+            branch: "main",
+        });
+        console.log("README.md file successfully updated.");
+    }
+    
+    const otherFiles = sanitizedFileStructure.filter((file) => file.path.toLowerCase() !== "readme.md");
+    if (otherFiles.length > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        await sendProgressUpdate(callbackURL, { step: "files", message: "Uploading project files..." });
+        await repoGenerator(octokit, otherFiles, repoCreationResponse.data.owner.login, repoCreationResponse.data.name);
+        console.log("All other files added successfully.");
+    }
+    
+    await sendProgressUpdate(callbackURL, {
+        status: "done",
+        message: "Success! Repository created.",
+        redirectUrl: "/home",
+        successFlash: "Successfully created GitHub repository!",
+    });
+
+  } catch (error) {
+    console.error("!!! A FATAL ERROR OCCURRED IN THE WORKER PROCESS !!!");
+    console.error("Error Message:", error.message);
+    
+    await sendProgressUpdate(callbackURL, {
+        status: "error",
+        message: `An error occurred: ${error.message || 'Unknown error. Please check server logs.'}`
+    });
   }
 });
 

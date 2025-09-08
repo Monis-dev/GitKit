@@ -14,10 +14,12 @@ import GitHubStrategy from "passport-github2";
 import { userInfo } from "os";
 import { error } from "console";
 import flash from "connect-flash";
+import { v4 as uuidv4 } from "uuid";
 
 const app = express();
 const port = 3000;
 const API_URL = "http://localhost:4000";
+const activeClients = {};
 env.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -172,7 +174,7 @@ app.get("/home", async (req, res) => {
         storeData: response.data,
         currentUser: req.user,
         errorMessage: errorMessage,
-        successMessage: successMessage
+        successMessage: successMessage,
       });
       // console.log(req.user)
     } else {
@@ -218,37 +220,73 @@ app.post("/api/home", upload.single("image"), async (req, res) => {
 //render edit page
 
 app.post("/github/commit/:projectId", async (req, res) => {
-  try {
-    if (req.isAuthenticated()) {
-      if (req.user && req.user.github_access_token) {
-        const userId = req.user.id;
-        const postId = req.params.projectId;
-        const packType = req.body.packType;
-        const response = await axios.post(`${API_URL}/github/commit/user`, {
-          userId: userId,
-          postId: postId,
-          packType: packType,
-        });
-        console.log("Backend call successful. Redirecting to home.");
-        req.flash("success", "Successfully created GitHub repository!");
-        res.redirect("/home");
-      } else {
-        console.log("User has not connected a GitHub account");
-        const errorMessage = req.flash(
-          "error",
-          "Please connect your GitHub account first to create a repository."
-        );
-        res.redirect("/home");
-      }
-    } else {
-      res.redirect("/login");
-      console.log("session not found");
-    }
-  } catch (error) {
-    console.error("Error in commit process:", error);
-    req.flash("error", "An unexpected error occurred. Please try again.");
-    res.redirect("/home");
+  if (!req.isAuthenticated() || !req.user || !req.user.github_access_token) {
+    return res.status(401).json({ error: "Authentication required." });
   }
+  const userId = req.user.id;
+  const postId = req.params.projectId;
+  const packType = req.body.packType;
+  console.log("Checking pack type: ",packType)
+  const jobId = uuidv4();
+  res.status(202).json({ jobId });
+  try {
+    const callbackURL = `${req.protocol}://${req.get("host")}/internal/commit-progress/${jobId}`;
+    console.log("Constructed Callback URL:", callbackURL);
+      console.log("--- CLIENT IS SENDING ---");
+      console.log("About to call worker with this body:");
+      const requestBody = {
+        userId: userId,
+        postId: postId,
+        packType: packType,
+        jobId: jobId,
+        callbackURL: callbackURL, // Check this variable name
+      };
+      console.log(requestBody);
+      console.log("-------------------------");
+    axios.post(`${API_URL}/github/commit/user`, requestBody);
+  } catch (error) {
+    console.error(`Error starting job ${jobId}:`, error.message);
+    const client = activeClients[jobId];
+    if (client) {
+      // If the browser managed to connect, send it an error message
+      const errorData = {
+        status: "error",
+        message: "Failed to communicate with worker server.",
+      };
+      client.write(`data: ${JSON.stringify(errorData)}\n\n`);
+      client.end();
+    }
+  }
+});
+
+app.get("/github/commit/progress/:jobId", (req, res) => {
+  const { jobId } = req.params;
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  activeClients[jobId] = res;
+  console.log(`Browser connected for job ${jobId}`);
+
+  req.on("close", () => {
+    delete activeClients[jobId];
+    console.log(`Browser disconnected for job ${jobId}`);
+  });
+});
+
+app.post("/internal/commit-progress/:jobId", async (req, res) => {
+  const { jobId } = req.params;
+  const progressData = req.body;
+  const client = activeClients[jobId];
+  if (client) {
+    client.write(`data: ${JSON.stringify(progressData)}\n\n`);
+    if (progressData.status === "done" || progressData.status === "error") {
+      client.end();
+    }
+  }
+  res.status(200).send();
 });
 
 app.get("/edit/:id", async (req, res) => {

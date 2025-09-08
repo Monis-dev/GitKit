@@ -1,11 +1,18 @@
-<link
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Page Title</title>
+  
+  
+  <link
   href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
   rel="stylesheet"
   integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
   crossorigin="anonymous"
 />
-<link rel="stylesheet" href="/styles/style.css">
-
+  <link rel="stylesheet" href="/styles/style.css">
+  <link rel="stylesheet" href="/styles/loader.css" />
+</head>
 <% let formAction = ''; 
    let buttonText = ''; 
    let project = {name: '', title: '', description: '', starting_date: '', ending_date: '', tech_used: ''}; 
@@ -23,10 +30,6 @@
     formAction = '/api/home'; // Or whatever your create route is
     buttonText = 'Create Project';
  } 
-    const formatDateForInput = (dateString) => {
-    if (!dateString || isNaN(new Date(dateString))) return ''; 
-    return new Date(dateString).toISOString().split('T')[0];
-    };
  %>
 
  <body>
@@ -41,7 +44,6 @@
         buttonText: buttonText,
         project: project,
         isEditing: isEditing,
-        formatDateForInput: formatDateForInput,
     }) %></main>
     
     
@@ -50,37 +52,155 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    const imageInput = document.getElementById("imageInput");
-    const uploadPrompt = document.getElementById("upload-prompt");
-    const fileFeedback = document.getElementById("file-feedback");
-    const fileName = document.getElementById("fileName");
-    const imageBtn = document.getElementById("viewImgBtn");
-    const imageModalPreview = document.getElementById("modalImagePreview");
-    const imagePopup = new bootstrap.Modal(
-      document.getElementById("imageModal")
-    );
+    document.addEventListener("DOMContentLoaded", () => {
+        // =========================================================
+        // ALL JavaScript logic is now safely inside this event listener.
+        // It will only run after the entire HTML page is ready.
+        // =========================================================
 
-    imageInput.addEventListener("change", () => {
-      const file = imageInput.files[0];
-      if (file) {
-        uploadPrompt.classList.add("d-none");
-        fileFeedback.classList.remove("d-none");
-        fileName.textContent = file.name;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          modalImagePreview.src = e.target.result;
+        // --- Part 1: Image Upload and Preview Logic ---
+        const imageInput = document.getElementById("imageInput");
+        const uploadPrompt = document.getElementById("upload-prompt");
+        const fileFeedback = document.getElementById("file-feedback");
+        const fileName = document.getElementById("fileName");
+        const imageBtn = document.getElementById("viewImgBtn");
+        const imageModalPreview = document.getElementById("modalImagePreview");
+        
+        // Safely create the modal instance *after* the DOM is loaded
+        const imagePopup = new bootstrap.Modal(
+            document.getElementById("imageModal")
+        );
+
+        imageInput.addEventListener("change", () => {
+            const file = imageInput.files[0];
+            if (file) {
+                uploadPrompt.classList.add("d-none");
+                fileFeedback.classList.remove("d-none");
+                fileName.textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imageModalPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        imageBtn.addEventListener("click", () => {
+            const existingimage_path = imageBtn.getAttribute('data-image-path');
+            if(existingimage_path){
+                const imageURL = existingimage_path.replace(/\\/g, '/').replace('public/', '/');
+                modalImagePreview.src = imageURL
+            }
+            imagePopup.show();
+        });
+
+
+        // --- Part 2: GitHub Commit Modal Logic ---
+        const commitForm = document.getElementById("commitForm");
+        const choiceModalElement = document.getElementById("exampleModalCenter");
+        const progressModalElement = document.getElementById("progressModal");
+
+        // Safely create instances for both modals
+        const choiceModal = new bootstrap.Modal(choiceModalElement);
+        const progressModal = new bootstrap.Modal(progressModalElement);
+
+        const stepElements = {
+            start: document.getElementById("step1"),
+            ai: document.getElementById("step2"),
+            repo_create: document.getElementById("step3"),
+            readme: document.getElementById("step4"),
+            files: document.getElementById("step5"),
         };
-        reader.readAsDataURL(file);
-      }
+
+        // Variable to track which submit button was clicked
+        let clickedButton = null;
+        commitForm.querySelectorAll('button[type="submit"]').forEach((button) => {
+            button.addEventListener("click", (event) => {
+                clickedButton = event.target;
+            });
+        });
+
+        commitForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            choiceModal.hide();
+
+            setTimeout(() => {
+                progressModal.show();
+            }, 250); // A quarter-second delay is perfect
+
+            // Reset all progress steps for a clean slate
+            Object.values(stepElements).forEach((el) => {
+                if (el) el.classList.remove("completed");
+            });
+
+            // Prepare the data to be sent to the server
+            let requestBody = {};
+            if (clickedButton) {
+                requestBody.packType = clickedButton.value;
+            }
+
+            try {
+                // Step 1: Call the "start" route
+                const startResponse = await fetch(commitForm.action, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+
+                if (!startResponse.ok) {
+                    throw new Error("Failed to start the process on the server.");
+                }
+
+                const { jobId } = await startResponse.json();
+
+                // Step 2: Open the listening connection (SSE)
+                const eventSource = new EventSource(
+                    `/github/commit/progress/${jobId}`
+                );
+
+                // Step 3: Handle all incoming progress messages
+                eventSource.onmessage = (event) => {
+                    const progress = JSON.parse(event.data);
+                    console.log("Received progress:", progress);
+
+                    const stepKey = progress.step ? progress.step.toLowerCase() : null;
+                    if (stepKey && stepElements[stepKey]) {
+                        stepElements[stepKey].classList.add("completed");
+                    }
+
+                    // Handle the final DONE message
+                    if (progress.status === "done") {
+                        eventSource.close();
+                        setTimeout(() => {
+                            alert(progress.successFlash || "Repository created successfully!");
+                            window.location.href = progress.redirectUrl || "/home";
+                        }, 500);
+                    }
+
+                    // Handle the final ERROR message
+                    if (progress.status === "error") {
+                        eventSource.close();
+                        progressModal.hide();
+                        alert(progress.message || "An unknown error occurred.");
+                    }
+                };
+
+                // Handle any network errors with the connection
+                eventSource.onerror = () => {
+                    eventSource.close();
+                    progressModal.hide();
+                    alert("Connection to the server was lost. Please try again.");
+                };
+
+            } catch (error) {
+                console.error("Frontend Error:", error);
+                progressModal.hide();
+                alert("Could not initiate the process. Please check the console.");
+            }
+        });
     });
-    imageBtn.addEventListener("click", () => {
-      const existingimage_path = imageBtn.getAttribute('data-image-path');
-      if(existingimage_path){
-         const imageURL = existingimage_path.replace(/\\/g, '/').replace('public/', '/');
-        modalImagePreview.src = imageURL
-      } 
-      imagePopup.show();
-    });
-    
-  </script>
+</script>
 </body>
