@@ -1,13 +1,3 @@
-/* ============================================= */
-/* STYLES FOR THE REAL-TIME PROGRESS MODAL       */
-/* ============================================= */
-
-/* 
-  By prefixing almost every rule with #progressModal, we make these styles
-  highly specific. This ensures they override any conflicting default
-  styles from Bootstrap when our content is inside a Bootstrap modal.
-*/
-
 #progressModal .modal-content {
   background: white;
   color: #000;
