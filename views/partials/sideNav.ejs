@@ -1,0 +1,60 @@
+<div class="sidebar d-flex flex-column" id="sidebar">
+  <!-- Sidebar header -->
+  <div class="sidebar-header">
+    <!-- Mobile header -->
+    <div
+      class="d-flex justify-content-between align-items-center p-3 d-md-none"
+    >
+      <h4 class="text-white mb-0">GitKit</h4>
+      <button
+        type="button"
+        class="btn-close btn-close-white"
+        id="closeSidebar"
+      ></button>
+    </div>
+    <!-- Desktop header -->
+    <div class="d-none d-md-block text-center py-3">
+      <h5 class="text-white mb-0">GitKit</h5>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <ul class="nav nav-pills flex-column flex-grow-1 px-0">
+    <li class="nav-item">
+      <a href="#" class="nav-link active" data-title="Chat">
+        <i class="bi bi-chat-dots"></i>
+        <span class="nav-text">Chat</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link" data-title="Dashboard">
+        <i class="bi bi-grid-3x3-gap"></i>
+        <span class="nav-text">Dashboard</span>
+      </a>
+    </li>
+  </ul>
+
+  <!-- User dropdown -->
+  <div class="dropup mt-auto sidebar-footer">
+    <a
+      href="#"
+      class="d-flex align-items-center p-3 text-decoration-none"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+    >
+      <img
+        src="https://lh3.googleusercontent.com/a/ACg8ocKsrmWry4M4mlJM8S_IinvlWKxtO0_Mk0U6suZulJJ-LyzpjgvR=s64-cc"
+        alt="Profile"
+        width="32"
+        height="32"
+        class="rounded-circle"
+      />
+      <span class="nav-text text-white ms-2">Monis</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+      <li><h6 class="dropdown-header">Signed in as Monis</h6></li>
+      <li><hr class="dropdown-divider" /></li>
+      <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+    </ul>
+  </div>
+</div>

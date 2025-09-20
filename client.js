@@ -217,6 +217,15 @@ app.post("/api/home", upload.single("image"), async (req, res) => {
   }
 });
 
+app.get("/chat", (req, res) =>{
+  res.render("chat.ejs")
+})
+
+app.post("/working", (req, res) =>{
+  const projectData = req.body;
+  console.log(projectData.title, projectData.description, projectData.tech_used, projectData.pack);
+  res.redirect("/home")
+})
 //render edit page
 
 app.post("/github/commit/:projectId", async (req, res) => {

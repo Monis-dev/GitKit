@@ -1,0 +1,171 @@
+:root {
+  --color-surface: #1f2937;
+  --color-border: #374151;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #9ca3af;
+  --color-primary: #3b82f6;
+}
+
+body {
+  background-color: #111827;
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Base sidebar styles */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 72px;
+  height: 100vh;
+  z-index: 1000;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  transition: all 0.3s ease;
+  padding: 16px 0;
+}
+
+/* Hide nav text by default (desktop) */
+.nav-text {
+  display: none;
+}
+
+/* Sidebar navigation links */
+.sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  margin: 8px;
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  text-decoration: none;
+}
+
+.sidebar .nav-link .bi {
+  width: 28px;
+  height: 28px;
+  font-size: 24px;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+}
+
+.sidebar .nav-link.active {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+/* User dropdown styling */
+.sidebar .dropdown-toggle::after {
+  display: none;
+}
+
+.sidebar .dropdown-menu {
+  --bs-dropdown-bg: #2d3748;
+  --bs-dropdown-link-color: var(--color-text-primary);
+  --bs-dropdown-link-hover-bg: var(--color-primary);
+  --bs-dropdown-border-color: var(--color-border);
+}
+
+.sidebar-footer {
+  border-top: 1px solid var(--color-border);
+}
+
+/* Main content positioning */
+.main-content {
+  margin-left: 72px;
+  min-height: 100vh;
+}
+
+#chatMessages.initial-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#initial-view {
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+#initial-view.fade-out {
+  opacity: 0;
+}
+
+/* Desktop header (always visible on desktop) */
+.desktop-header {
+  display: block !important;
+}
+
+/* Mobile header (hidden by default) */
+.mobile-header {
+  display: none !important;
+}
+
+/* Mobile styles */
+@media (max-width: 767px) {
+  .sidebar {
+    left: -280px;
+    width: 280px;
+    padding: 0;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .nav-text {
+    display: inline;
+  }
+
+  .sidebar .nav-link {
+    justify-content: flex-start;
+    padding-left: 16px;
+    height: 48px;
+  }
+
+  .sidebar .nav-link .bi {
+    margin-right: 12px;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .mobile-header {
+    display: flex !important;
+  }
+
+  .desktop-header {
+    display: none !important;
+  }
+}
+
+/* Form control focus styling */
+.form-control:focus {
+  border-color: #4b5563 !important;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Mobile overlay */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.mobile-overlay.show {
+  display: block;
+}
