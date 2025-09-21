@@ -6,39 +6,42 @@
   data-bs-backdrop="static"
   data-bs-keyboard="false"
 >
-  <div class="modal-dialog modal-dialog-centered">
+  <div
+    class="modal-dialog modal-dialog-centered"
+    style="background-color: rgba(52, 52, 52, 0.425)"
+  >
     <div class="modal-content">
       <div class="modal-body p-4 text-center">
         <h3>Creating Your Repository...</h3>
         <ul class="progress-steps">
           <!-- Step 1: Corresponds to "start" -->
-          <li id="step1">
-            <div class="status-indicator">...</div>
-            Making connection...
+          <li id="step-start">
+            <div class="status-indicator"></div>
+            Fetching data...
           </li>
           <!-- Step 2: Corresponds to "ai" -->
-          <li id="step2">
-            <div class="status-indicator">...</div>
+          <li id="step-ai">
+            <div class="status-indicator"></div>
             Generating files with AI...
           </li>
           <!-- Step 3: Corresponds to "repo_create" -->
-          <li id="step3">
-            <div class="status-indicator">...</div>
+          <li id="step-repo_create">
+            <div class="status-indicator"></div>
             Creating GitHub repository...
           </li>
           <!-- Step 4: Corresponds to "readme" -->
-          <li id="step4">
-            <div class="status-indicator">...</div>
+          <li id="step-readme">
+            <div class="status-indicator"></div>
             Updating README.md...
           </li>
           <!-- Step 5: Corresponds to "files" -->
-          <li id="step5">
-            <div class="status-indicator">...</div>
+          <li id="step-files">
+            <div class="status-indicator"></div>
             Uploading project files...
           </li>
         </ul>
+        <div id="final-status" class="mt-3"></div> 
       </div>
     </div>
   </div>
 </div>
-

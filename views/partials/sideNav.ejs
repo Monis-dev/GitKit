@@ -21,13 +21,13 @@
   <!-- Navigation -->
   <ul class="nav nav-pills flex-column flex-grow-1 px-0">
     <li class="nav-item">
-      <a href="#" class="nav-link active" data-title="Chat">
+      <a href="/home" class="nav-link <%= currentPage === 'chat' ? 'active' : '' %>" data-title="Chat">
         <i class="bi bi-chat-dots"></i>
         <span class="nav-text">Chat</span>
       </a>
     </li>
     <li class="nav-item">
-      <a href="#" class="nav-link" data-title="Dashboard">
+      <a href="/dashboard" class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>" data-title="Dashboard">
         <i class="bi bi-grid-3x3-gap"></i>
         <span class="nav-text">Dashboard</span>
       </a>
@@ -43,16 +43,16 @@
       aria-expanded="false"
     >
       <img
-        src="https://lh3.googleusercontent.com/a/ACg8ocKsrmWry4M4mlJM8S_IinvlWKxtO0_Mk0U6suZulJJ-LyzpjgvR=s64-cc"
+        src="<%= currentUser.user_image_url %>"
         alt="Profile"
         width="32"
         height="32"
         class="rounded-circle"
       />
-      <span class="nav-text text-white ms-2">Monis</span>
+      <span class="nav-text text-white ms-2"><%= currentUser.username %></span>
     </a>
     <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-      <li><h6 class="dropdown-header">Signed in as Monis</h6></li>
+      <li><h6 class="dropdown-header">Signed in as <%= currentUser.username %></h6></li>
       <li><hr class="dropdown-divider" /></li>
       <li><a class="dropdown-item" href="/logout">Sign out</a></li>
     </ul>

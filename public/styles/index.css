@@ -1,3 +1,4 @@
+/* === BASE LAYOUT STYLES (Copied from chat.css for consistency) === */
 :root {
   --color-background: #111827; 
   --color-surface: #1F2937;    
@@ -8,93 +9,97 @@
   --color-danger: #EF4444;      
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
-  font-family: 'Inter', sans-serif;
   background-color: var(--color-background);
   color: var(--color-text-primary);
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.top-header {
-  height: 65px;
-  flex-shrink: 0;
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 72px;
+  height: 100vh;
+  z-index: 1000;
   background-color: var(--color-surface);
-  color: var(--color-text-primary);
+  border-right: 1px solid var(--color-border);
+  transition: all 0.3s ease;
+  padding: 16px 0;
+}
+
+.nav-text { display: none; }
+
+.sidebar .nav-link {
   display: flex;
   align-items: center;
-  justify-content: space-between; 
-  padding: 0 24px;
-  border-bottom: 1px solid var(--color-border);
+  justify-content: center;
+  height: 56px;
+  margin: 8px;
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  text-decoration: none;
 }
 
-.top-header h1 {
-  font-size: 24px;
-  font-weight: 700;
-}
+.sidebar .nav-link .bi { width: 28px; height: 28px; font-size: 24px; }
+.sidebar .nav-link:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--color-text-primary); }
+.sidebar .nav-link.active { background-color: var(--color-primary); color: #ffffff; }
 
-.connect-github-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px; 
-  font-weight: 500;
-}
-
-.github-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.app-content-area {
-  display: flex;
-  height: calc(100vh - 65px);
-}
+.sidebar .dropdown-toggle::after { display: none; }
+.sidebar .dropdown-menu { --bs-dropdown-bg: #2d3748; --bs-dropdown-link-color: var(--color-text-primary); --bs-dropdown-link-hover-bg: var(--color-primary); --bs-dropdown-border-color: var(--color-border); }
+.sidebar-footer { border-top: 1px solid var(--color-border); }
 
 .main-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 32px;
-  background-color: var(--color-background);
+  margin-left: 72px;
+  min-height: 100vh;
 }
 
-.projects-container {
-  max-width: 100%;
-  margin: 0 auto;
+.desktop-header { display: flex !important; }
+.mobile-header { display: none !important; }
+
+/* Mobile overlay */
+.mobile-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+.mobile-overlay.show { display: block; }
+
+@media (max-width: 767px) {
+  .sidebar { left: -280px; width: 280px; padding: 0; }
+  .sidebar.show { left: 0; }
+  .nav-text { display: inline; }
+  .sidebar .nav-link { justify-content: flex-start; padding-left: 16px; height: 48px; }
+  .sidebar .nav-link .bi { margin-right: 12px; }
+  .main-content { margin-left: 0; }
+  .mobile-header { display: flex !important; }
+  .desktop-header { display: none !important; }
 }
+
+/* === DASHBOARD-SPECIFIC STYLES === */
 
 .project-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
   list-style-type: none;
+  padding: 0;
+  margin: 0;
 }
 
 .project-card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px; 
+  border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out;
   display: flex;
-  flex-direction: column; 
-  overflow: hidden; 
+  flex-direction: column;
+  padding: 24px;
 }
 
 .project-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-  border-color: var(--color-primary); 
-}
-
-.project-card__link {
-  padding: 24px;
-  text-decoration: none;
-  color: inherit;
-  flex-grow: 1; 
+  border-color: var(--color-primary);
 }
 
 .project-card__title {
@@ -108,17 +113,16 @@ body {
   font-size: 14px;
   color: var(--color-text-secondary);
   display: flex;
-  gap: 8px; 
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-grow: 1; /* Pushes actions to the bottom */
 }
 
 .project-card__actions {
   display: flex;
   gap: 12px;
-  padding: 0 24px 24px 24px; 
-  margin-top: auto; 
-  border-top: 1px solid var(--color-border);
   padding-top: 16px;
-  margin-top: 16px;
+  border-top: 1px solid var(--color-border);
 }
 
 .btn-outline-danger {
@@ -131,10 +135,9 @@ body {
   color: var(--color-text-primary);
 }
 
-
 .empty-state {
   text-align: center;
-  margin-top: 60px;
+  padding-top: 60px;
   color: var(--color-text-secondary);
 }
 
@@ -142,14 +145,63 @@ body {
   color: var(--color-text-primary);
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    padding: 16px; 
-  }
-  .top-header {
-    padding: 0 16px;
-  }
+.connect-github-btn {
+  gap: 8px;
+  font-weight: 500;
+}
+
+.github-icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 767px) {
   .project-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.progress-steps {
+  text-align: left;
+  margin-top: 20px;
+}
+.progress-steps li {
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  color: #9CA3AF; /* Dimmed by default */
+  transition: color 0.3s ease;
+}
+.progress-steps li .status-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #4B5563; /* Gray border */
+  margin-right: 15px;
+  position: relative;
+  transition: all 0.3s ease; /* Add transition for a smooth change */
+}
+
+.progress-steps li.success {
+  color: #F9FAFB; /* Full white color on success */
+}
+.progress-steps li.success .status-indicator {
+  background-color: #22C55E; /* Green background */
+  border-color: #22C55E; /* Green border */
+}
+/* This CSS adds the checkmark inside the circle */
+.progress-steps li.success .status-indicator::after {
+  content: '✔';
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: bold;
+}
+/* END OF CRITICAL PART */
+
+#final-status {
+  min-height: 50px;
 }

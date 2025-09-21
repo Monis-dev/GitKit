@@ -5,7 +5,7 @@ import env from "dotenv";
 import bcrypt, { hash } from "bcrypt";
 import multer from "multer";
 import { Octokit } from "@octokit/rest";
-import { runChat } from "./agent.js";
+import { runChat } from "./public/js/agent.js";
 import axios from "axios";
 
 const app = express();
@@ -127,6 +127,7 @@ app.post("/api/auth/google", async (req, res) => {
     res.status(401).json({ message: "Error authentication using google" });
   }
 });
+///////////////////////////////Update the post table remove the starting, ending date and image_url///////////////////////////////////////////////////////////////////////////////////
 
 app.post("/api/auth/github", async (req, res) => {
   const userData = req.body;
@@ -155,7 +156,7 @@ app.post("/api/auth/github", async (req, res) => {
     res.status(401).json({ message: "Error authentication using github" });
   }
 });
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.patch("/user/github/:id/link-github", async (req, res) => {
   try {
     const userId = req.params.id;
@@ -236,94 +237,143 @@ async function sendProgressUpdate(callbackURL, progressData) {
 }
 
 app.post("/github/commit/user", async (req, res) => {
-  const { userId, postId, packType, jobId, callbackURL } = req.body;
+  const { userId, postId, jobId, packType,callbackURL } = req.body;
 
   try {
     res.status(202).json({ message: `Job ${jobId} accepted.` });
-    
-    const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [userId]);
-    const postDetails = await db.query("SELECT * FROM post WHERE id = $1", [postId]);
 
-    await sendProgressUpdate(callbackURL, { step: "start", message: "Fetching user & project data..." });
-    
+    const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [
+      userId,
+    ]);
+    const postDetails = await db.query("SELECT * FROM post WHERE id = $1", [
+      postId,
+    ]);
+
+    await sendProgressUpdate(callbackURL, {
+      step: "start",
+      message: "Fetching user & project data...",
+    });
+
     if (userDetails.rows.length === 0 || postDetails.rows.length === 0) {
       throw new Error("User or Post not found in the database.");
     }
-    
+
     const user = userDetails.rows[0];
     const post = postDetails.rows[0];
 
-    await sendProgressUpdate(callbackURL, { step: "ai", message: "Generating file structure with AI..." });
-    const rawAIResponse = await runChat(packType, post.title, post.description, post.tech_used);
+    console.log(packType)
+
+    if (!user.github_access_token) {
+      throw new Error("GitHub account not connected or access token is missing.");
+    }
+
+    await sendProgressUpdate(callbackURL, {
+      step: "ai",
+      message: "Generating file structure with AI...",
+    });
+    const rawAIResponse = await runChat(
+      packType,
+      post.title,
+      post.description,
+      post.tech_used
+    );
 
     const jsonString = rawAIResponse.match(/\{[\s\S]*\}/);
     if (!jsonString) {
-      throw new Error("Could not parse a valid JSON structure from the AI response.");
+      throw new Error(
+        "Could not parse a valid JSON structure from the AI response."
+      );
     }
     const cleanJson = jsonString[0];
     const aiData = JSON.parse(cleanJson);
     const fileStructure = aiData.fileStructure;
 
-    const sanitizedFileStructure = fileStructure
-      .filter(file => file.path && file.path.trim() !== '' && !file.path.endsWith('/'));
-    
-    const octokit = new Octokit({ auth: user.github_access_token });
-    const repoName = post.title.replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-');
+    const sanitizedFileStructure = fileStructure.filter(
+      (file) => file.path && file.path.trim() !== "" && !file.path.endsWith("/")
+    );
 
-    await sendProgressUpdate(callbackURL, { step: "repo_create", message: "Creating GitHub repository..." });
+    const octokit = new Octokit({ auth: user.github_access_token });
+    const repoName = post.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9-]/g, "-")
+      .replace(/--+/g, "-");
+
+    await sendProgressUpdate(callbackURL, {
+      step: "repo_create",
+      message: "Creating GitHub repository...",
+    });
     const repoCreationResponse = await octokit.request("POST /user/repos", {
       name: repoName,
       description: "This is your first repository",
       private: true,
       auto_init: true,
     });
-    
-    await new Promise((resolve) => setTimeout(resolve, 3000)); 
 
-    const readmeIndex = sanitizedFileStructure.findIndex((file) => file.path.toLowerCase() === "readme.md");
-    await sendProgressUpdate(callbackURL, { step: "readme", message: "Updating README.md..." });
-    if (readmeIndex > -1) {
-        const readmeFileObject = sanitizedFileStructure[readmeIndex]; 
-        const encodedReadmeString = Buffer.from(readmeFileObject.content).toString("base64");
-        const { data: currentReadme } = await octokit.rest.repos.getContent({
-            owner: repoCreationResponse.data.owner.login,
-            repo: repoCreationResponse.data.name,
-            path: "README.md",
-        });
-        await octokit.rest.repos.createOrUpdateFileContents({
-            owner: repoCreationResponse.data.owner.login,
-            repo: repoCreationResponse.data.name,
-            path: "README.md",
-            message: "Update README.md from Project Diary",
-            content: encodedReadmeString,
-            sha: currentReadme.sha,
-            branch: "main",
-        });
-        console.log("README.md file successfully updated.");
-    }
-    
-    const otherFiles = sanitizedFileStructure.filter((file) => file.path.toLowerCase() !== "readme.md");
-    if (otherFiles.length > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        await sendProgressUpdate(callbackURL, { step: "files", message: "Uploading project files..." });
-        await repoGenerator(octokit, otherFiles, repoCreationResponse.data.owner.login, repoCreationResponse.data.name);
-        console.log("All other files added successfully.");
-    }
-    
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    const readmeIndex = sanitizedFileStructure.findIndex(
+      (file) => file.path.toLowerCase() === "readme.md"
+    );
     await sendProgressUpdate(callbackURL, {
-        status: "done",
-        message: "Success! Repository created.",
-        redirectUrl: "/home",
-        successFlash: "Successfully created GitHub repository!",
+      step: "readme",
+      message: "Updating README.md...",
     });
+    if (readmeIndex > -1) {
+      const readmeFileObject = sanitizedFileStructure[readmeIndex];
+      const encodedReadmeString = Buffer.from(
+        readmeFileObject.content
+      ).toString("base64");
+      const { data: currentReadme } = await octokit.rest.repos.getContent({
+        owner: repoCreationResponse.data.owner.login,
+        repo: repoCreationResponse.data.name,
+        path: "README.md",
+      });
+      await octokit.rest.repos.createOrUpdateFileContents({
+        owner: repoCreationResponse.data.owner.login,
+        repo: repoCreationResponse.data.name,
+        path: "README.md",
+        message: "Update README.md from Project Diary",
+        content: encodedReadmeString,
+        sha: currentReadme.sha,
+        branch: "main",
+      });
+      console.log("README.md file successfully updated.");
+    }
 
+    const otherFiles = sanitizedFileStructure.filter(
+      (file) => file.path.toLowerCase() !== "readme.md"
+    );
+    if (otherFiles.length > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await sendProgressUpdate(callbackURL, {
+        step: "files",
+        message: "Uploading project files...",
+      });
+      await repoGenerator(
+        octokit,
+        otherFiles,
+        repoCreationResponse.data.owner.login,
+        repoCreationResponse.data.name
+      );
+      console.log("All other files added successfully.");
+    }
+
+    await sendProgressUpdate(callbackURL, {
+      status: "done",
+      message: "Success! Repository created.",
+      redirectUrl: "/home",
+      successFlash: "Successfully created GitHub repository!",
+    });
   } catch (error) {
     console.error("!!! A FATAL ERROR OCCURRED IN THE WORKER PROCESS !!!");
     console.error("Error Message:", error.message);
-    
+
     await sendProgressUpdate(callbackURL, {
-        status: "error",
-        message: `An error occurred: ${error.message || 'Unknown error. Please check server logs.'}`
+      status: "error",
+      message: `An error occurred: ${
+        error.message || "Unknown error. Please check server logs."
+      }`,
     });
   }
 });
@@ -373,82 +423,17 @@ app.get("/home/:id", async (req, res) => {
 });
 
 app.post("/add", async (req, res) => {
-  const rawStartDate = req.body.starting_date;
-  const rawEndDate = req.body.ending_date;
-
-  const startDate = rawStartDate ? rawStartDate : null;
-  const endDate = rawEndDate ? rawEndDate : null;
-
-  const userPost = {
-    name: req.body.name,
-    title: req.body.title,
-    description: req.body.description,
-    starting_date: req.body.starting_date,
-    ending_date: req.body.ending_date,
-    tech_used: req.body.tech_used,
-    image_path: req.body.image_path,
-  };
-  const result = await db.query(
-    "INSERT INTO post(name, title, description, starting_date, ending_date, tech_used, image_path, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-    [
-      userPost.name,
-      userPost.title,
-      userPost.description,
-      startDate,
-      endDate,
-      userPost.tech_used,
-      userPost.image_path,
-      req.body.userId,
-    ]
-  );
-  res.status(202).json(result.rows);
-});
-
-app.patch("/api/home/:id", async (req, res) => {
   try {
-    const postId = parseInt(req.params.id);
-    const userId = req.body.userId;
-    const checkResult = await db.query(
-      "SELECT * FROM post WHERE id = $1 AND user_id = $2",
-      [postId, userId]
+    const { name, title, description, tech_used, pack, userId } = req.body;
+    const result = await db.query(
+      "INSERT INTO post(name, title, description, tech_used, pack, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *", [
+        name, title ,description, tech_used, pack, userId
+      ]
     );
-    if (checkResult.rows.length === 0) {
-      res.status(404).json({ message: "Post not found..." });
-    }
-
-    const originalPost = checkResult.rows[0];
-    const updatedPost = {
-      name: req.body.name || originalPost.name,
-      title: req.body.title || originalPost.title,
-      starting_date: req.body.starting_date || originalPost.starting_date,
-      ending_date: req.body.ending_date || originalPost.ending_date,
-      description: req.body.description || originalPost.description,
-      tech_used: req.body.tech_used || originalPost.tech_used,
-      image_path: req.file || originalPost.image_path,
-    };
-    const updateQuery = `
-      UPDATE post
-      SET name = $1, title = $2, description = $3, starting_date = $4, ending_date = $5, tech_used = $6, image_path = $7
-      WHERE id = $8 AND user_id = $9
-      RETURNING *;
-    `;
-
-    const result = await db.query(updateQuery, [
-      updatedPost.name,
-      updatedPost.title,
-      updatedPost.description,
-      updatedPost.starting_date,
-      updatedPost.ending_date,
-      updatedPost.tech_used,
-      updatedPost.image_path,
-      postId,
-      userId,
-    ]);
-
-    res.json(result.rows[0]);
+    res.status(202).json(result.rows[0]);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
+    console.err("API Error in POST /add", error);
+    res.status(500).json({message: "Failed to create project"})
   }
 });
 

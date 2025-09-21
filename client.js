@@ -163,69 +163,69 @@ app.get(
   }
 );
 
-//get home page
 app.get("/home", async (req, res) => {
-  try {
-    if (req.isAuthenticated()) {
-      const response = await axios.get(`${API_URL}/home?userId=${req.user.id}`);
-      const errorMessage = req.flash("error")[0];
-      const successMessage = req.flash("success")[0];
-      res.render("index.ejs", {
-        storeData: response.data,
-        currentUser: req.user,
-        errorMessage: errorMessage,
-        successMessage: successMessage,
-      });
-      // console.log(req.user)
-    } else {
-      res.redirect("/");
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching posts" });
+  if (req.isAuthenticated()) {
+    const errorMessage = req.flash("error")[0];
+    const successMessage = req.flash("success")[0];
+    res.render("chat.ejs", {
+      // storeData: response.data,
+      currentUser: req.user,
+      currentPage: "chat",
+      errorMessage: errorMessage,
+      successMessage: successMessage,
+    });
+    // console.log(req.user)
+  } else {
+    res.redirect("/");
   }
 });
 
-//render add page
-app.get("/add", (req, res) => {
-  // console.log(req.user);
-  res.render("modify.ejs", { currentUser: req.user });
+app.get("/dashboard", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect("/");
+  }
+  try {
+    const response = await axios.get(`${API_URL}/home?userId=${req.user.id}`);
+    const storeData = response.data; // The list of projects
+
+    res.render("dashboard.ejs", {
+      currentUser: req.user,
+      storeData: storeData, // Pass the project list to the dashboard view
+      currentPage: "dashboard", // For the active sidebar link
+    });
+  } catch (error) {
+    console.error("Failed to load dashboard:", error);
+    res.redirect("/"); // Redirect on error
+  }
 });
 
 //upload data
-app.post("/api/home", upload.single("image"), async (req, res) => {
+app.post("/api/home", async (req, res) => {
+  if(!req.isAuthenticated()){
+    return res.redirect("/login")
+  }
   try {
-    const { name, title, description, starting_date, ending_date, tech_used } =
-      req.body;
-    let image_path = null;
+    const name = req.user.username;
+    console.log(name)
+    const { title, description, tech_used, pack } = req.body;
     const userId = req.user.id;
-    if (req.file) {
-      image_path = req.file.path;
-    }
     const response = await axios.post(`${API_URL}/add`, {
       name: name,
       title: title,
       description: description,
-      starting_date: starting_date,
-      ending_date: ending_date,
       tech_used: tech_used,
-      image_path: image_path,
+      pack: pack.toLowerCase(),
       userId: userId,
     });
+    req.flash("success", "Project idea saved!");
     res.redirect("/home");
   } catch (error) {
+    console.error("Error saving project:", error.message);
+    req.flash("error", "Failed to save your project idea.");
     res.status(404).json({ message: "Error loading home page" });
   }
 });
 
-app.get("/chat", (req, res) =>{
-  res.render("chat.ejs")
-})
-
-app.post("/working", (req, res) =>{
-  const projectData = req.body;
-  console.log(projectData.title, projectData.description, projectData.tech_used, projectData.pack);
-  res.redirect("/home")
-})
 //render edit page
 
 app.post("/github/commit/:projectId", async (req, res) => {
@@ -235,23 +235,26 @@ app.post("/github/commit/:projectId", async (req, res) => {
   const userId = req.user.id;
   const postId = req.params.projectId;
   const packType = req.body.packType;
-  console.log("Checking pack type: ",packType)
+  console.log(packType)
+  console.log("Checking pack type: ", packType);
   const jobId = uuidv4();
   res.status(202).json({ jobId });
   try {
-    const callbackURL = `${req.protocol}://${req.get("host")}/internal/commit-progress/${jobId}`;
+    const callbackURL = `${req.protocol}://${req.get(
+      "host"
+    )}/internal/commit-progress/${jobId}`;
     console.log("Constructed Callback URL:", callbackURL);
-      console.log("--- CLIENT IS SENDING ---");
-      console.log("About to call worker with this body:");
-      const requestBody = {
-        userId: userId,
-        postId: postId,
-        packType: packType,
-        jobId: jobId,
-        callbackURL: callbackURL, // Check this variable name
-      };
-      console.log(requestBody);
-      console.log("-------------------------");
+    console.log("--- CLIENT IS SENDING ---");
+    console.log("About to call worker with this body:");
+    const requestBody = {
+      userId: userId,
+      postId: postId,
+      packType: packType,
+      jobId: jobId,
+      callbackURL: callbackURL, // Check this variable name
+    };
+    console.log(requestBody);
+    console.log("-------------------------");
     axios.post(`${API_URL}/github/commit/user`, requestBody);
   } catch (error) {
     console.error(`Error starting job ${jobId}:`, error.message);
@@ -298,41 +301,16 @@ app.post("/internal/commit-progress/:jobId", async (req, res) => {
   res.status(200).send();
 });
 
-app.get("/edit/:id", async (req, res) => {
-  try {
-    const response = await axios.get(
-      `${API_URL}/home/${parseInt(req.params.id)}`
-    );
-    res.render("modify.ejs", { data: response.data, currentUser: req.user });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching post" });
-  }
-});
-
-app.patch("/api/home/:id", upload.single("image"), async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const updatedData = { ...req.body, userId };
-    if (req.file) {
-      updatedData.image_path = req.file.path;
-    }
-    await axios.patch(
-      `${API_URL}/api/home/${Number(req.params.id)}`,
-      updatedData
-    );
-    res.redirect("/home");
-  } catch (error) {
-    res.status(404).json({ message: "Error loading Edited home page" });
-  }
-});
-
 app.delete("/delete/:id", async (req, res) => {
   try {
     const postId = parseInt(req.params.id);
     const userId = req.user.id;
     await axios.delete(`${API_URL}/home/${postId}?userId=${userId}`);
-    res.redirect("/home");
+    req.flash("success", "Project deleted successfully!")
+    res.redirect("/dashboard");
   } catch (error) {
+    console.error("Failed to delete project:", error); 
+    req.flash("error", "Unable to delete the project. Please try again.");
     res.status(404).json({ message: "Unable to delete the blog!" });
   }
 });

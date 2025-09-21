@@ -1,0 +1,177 @@
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Diary</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  />
+  <link rel="stylesheet" href="/styles/index.css" />
+</head>
+
+<body class="d-flex flex-column">
+  <% let message = null; if(locals.errorMessage) { message = locals.errorMessage
+  } else if (locals.successMessage) { message = locals.successMessage } %> <%
+  if(message) { %>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const messageModalElement = document.getElementById("messageModal");
+      const messageParaElement = document.getElementById("messagePara");
+      if (messageModalElement && messageParaElement) {
+        messageParaElement.innerHTML = "<%= message %>";
+        const messageModal = new bootstrap.Modal(messageModalElement);
+        messageModal.show();
+      }
+    });
+  </script>
+  <% } %> <%- include("partials/sideNav.ejs", {currentUser: currentUser,
+  currentPage: currentPage}) %>
+
+  <div class="main-content d-flex flex-column vh-100">
+    <!-- Mobile header -->
+    <div
+      class="mobile-header p-3 d-flex align-items-center"
+      style="background-color: #1f2937; border-bottom: 1px solid #374151"
+    >
+      <button class="btn btn-outline-light me-3" id="menuToggle">
+        <i class="bi bi-list"></i>
+      </button>
+      <h2 class="text-white mb-0">Dashboard</h2>
+    </div>
+
+    <!-- Desktop header -->
+    <header
+      class="desktop-header p-2 flex-shrink-0 d-flex justify-content-between align-items-center"
+      style="background-color: #1f2937; border-bottom: 1px solid #374151"
+    >
+      <h2 class="ps-2 text-white">Dashboard</h2>
+
+      <!-- Connect to GitHub Button for Desktop -->
+      <a
+        href="/connect/github"
+        class="btn btn-primary connect-github-btn me-3 d-inline-flex align-items-center"
+      >
+        Connect Github
+        <img
+          src="/images/Github_img.png"
+          alt="GitHub Icon"
+          class="github-icon ms-2"
+        />
+      </a>
+    </header>
+
+    <!-- Main Dashboard Content -->
+    <main class="flex-grow-1 overflow-y-auto p-4">
+      <% if (storeData.length > 0) { %>
+      <ul class="project-grid">
+        <% storeData.forEach(data => { %>
+        <li class="project-card d-flex flex-column">
+          <h2 class="project-card__title"><%= data.title %></h2>
+          <div class="project-card__meta">
+            <span>By: <%= data.name %></span>
+            <span><%= new Date(data.date).toLocaleDateString() %></span>
+          </div>
+          <div class="project-card__actions">
+            <button
+              type="submit"
+              class="btn btn-primary btn-sm p-2"
+              data-bs-toggle="modal"
+              data-bs-target="#deployModal"
+              data-post-id="<%= data.id %>"
+              data-post-title="<%= data.title %>"
+            >
+              Commit
+            </button>
+            <form action="/delete/<%= data.id %>?_method=DELETE" method="POST">
+              <button type="submit" class="btn btn-outline-danger btn-sm p-2">
+                Delete
+              </button>
+            </form>
+          </div>
+        </li>
+        <% }); %>
+      </ul>
+      <% } else { %>
+      <div class="empty-state">
+        <h3>No projects yet.</h3>
+        <p>Go to the "Chat" page to create your first project!</p>
+      </div>
+      <% } %>
+    </main>
+  </div>
+  <div
+    class="modal fade"
+    id="deployModal"
+    tabindex="-1"
+    aria-labelledby="deployModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deployModalLabel">Deploy Project</h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <form id="deployForm" method="POST">
+          <!-- Action will be set by JS -->
+          <div class="modal-body">
+            <p>
+              You are about to deploy: <strong id="modalProjectTitle"></strong>
+            </p>
+            <p>Choose the repository type:</p>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="packType"
+                id="starterPack"
+                value="starter"
+                checked
+              />
+              <label class="form-check-label" for="starterPack"
+                >Starter Pack (Basic structure and setup)</label
+              >
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="packType"
+                id="completePack"
+                value="complete"
+              />
+              <label class="form-check-label" for="completePack"
+                >Complete Project (AI-generated files and code)</label
+              >
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Confirm and Deploy
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <%- include("partials/modal.ejs") %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
