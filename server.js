@@ -5,10 +5,9 @@ import env from "dotenv";
 import bcrypt, { hash } from "bcrypt";
 import multer from "multer";
 import { Octokit } from "@octokit/rest";
-import { runChat } from "./public/js/agent.js";
-import axios from "axios";
-
+import { runOrchestrator } from "./server_logic/Agents/orchestrator_agent.js";
 const app = express();
+
 const port = 4000;
 const saltRounds = 10;
 const { Pool } = pg;
@@ -32,7 +31,7 @@ const upload = multer({ storage: storage });
 
 const storeData = []; //to show all the blog post
 
-const db = new Pool({
+export const db = new Pool({
   user: process.env.PG_USER,
   host: process.env.PG_HOST,
   database: process.env.PG_DATABASE,
@@ -172,209 +171,27 @@ app.patch("/user/github/:id/link-github", async (req, res) => {
   }
 });
 
-async function repoGenerator(octokit, Response, owner, repo) {
-  const blobSHAs = [];
-  for (const file of Response) {
-    const blobData = await octokit.rest.git.createBlob({
-      owner,
-      repo,
-      content: file.content,
-      encoding: "utf-8",
-    });
-    blobSHAs.push({ path: file.path, sha: blobData.data.sha });
-  }
-  const treeArray = blobSHAs.map(({ path, sha }) => ({
-    path,
-    sha,
-    mode: "100644",
-    type: "blob",
-  }));
-  try {
-    const refData = await octokit.rest.git.getRef({
-      owner,
-      repo,
-      ref: "heads/main",
-    });
-    const parentSha = refData.data.object.sha;
-    const parentCommit = await octokit.rest.git.getCommit({
-      owner,
-      repo,
-      commit_sha: parentSha,
-    });
-    const treeData = await octokit.rest.git.createTree({
-      owner,
-      repo,
-      tree: treeArray,
-      base_tree: parentCommit.data.tree.sha,
-    });
-    const treeShaData = treeData.data.sha;
-    const commitData = await octokit.rest.git.createCommit({
-      owner,
-      repo,
-      message: "Initial commit from the Project Diary",
-      tree: treeShaData,
-      parents: [parentSha],
-    });
-    const commitSha = commitData.data.sha;
-    return await octokit.rest.git.updateRef({
-      owner,
-      repo,
-      ref: "heads/main",
-      sha: commitSha,
-      force: false,
-    });
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-async function sendProgressUpdate(callbackURL, progressData) {
-  try {
-    await axios.post(callbackURL, progressData);
-  } catch (error) {
-    console.log("Failed to send progress update:", error.message);
-  }
-}
-
 app.post("/github/commit/user", async (req, res) => {
-  const { userId, postId, jobId, packType,callbackURL } = req.body;
-
   try {
+    const { userId, postId, jobId, packType, callbackURL } = req.body;
+
+    await db.query(
+      "INSERT INTO jobs (id , user_id, post_id) VALUES ($1, $2, $3)",
+      [jobId, userId, postId]
+    );
     res.status(202).json({ message: `Job ${jobId} accepted.` });
-
-    const userDetails = await db.query("SELECT * FROM users WHERE id = $1", [
-      userId,
-    ]);
-    const postDetails = await db.query("SELECT * FROM post WHERE id = $1", [
-      postId,
-    ]);
-
-    await sendProgressUpdate(callbackURL, {
-      step: "start",
-      message: "Fetching user & project data...",
-    });
-
-    if (userDetails.rows.length === 0 || postDetails.rows.length === 0) {
-      throw new Error("User or Post not found in the database.");
-    }
-
-    const user = userDetails.rows[0];
-    const post = postDetails.rows[0];
-
-    console.log(packType)
-
-    if (!user.github_access_token) {
-      throw new Error("GitHub account not connected or access token is missing.");
-    }
-
-    await sendProgressUpdate(callbackURL, {
-      step: "ai",
-      message: "Generating file structure with AI...",
-    });
-    const rawAIResponse = await runChat(
-      packType,
-      post.title,
-      post.description,
-      post.tech_used
-    );
-
-    const jsonString = rawAIResponse.match(/\{[\s\S]*\}/);
-    if (!jsonString) {
-      throw new Error(
-        "Could not parse a valid JSON structure from the AI response."
-      );
-    }
-    const cleanJson = jsonString[0];
-    const aiData = JSON.parse(cleanJson);
-    const fileStructure = aiData.fileStructure;
-
-    const sanitizedFileStructure = fileStructure.filter(
-      (file) => file.path && file.path.trim() !== "" && !file.path.endsWith("/")
-    );
-
-    const octokit = new Octokit({ auth: user.github_access_token });
-    const repoName = post.title
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9-]/g, "-")
-      .replace(/--+/g, "-");
-
-    await sendProgressUpdate(callbackURL, {
-      step: "repo_create",
-      message: "Creating GitHub repository...",
-    });
-    const repoCreationResponse = await octokit.request("POST /user/repos", {
-      name: repoName,
-      description: "This is your first repository",
-      private: true,
-      auto_init: true,
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    const readmeIndex = sanitizedFileStructure.findIndex(
-      (file) => file.path.toLowerCase() === "readme.md"
-    );
-    await sendProgressUpdate(callbackURL, {
-      step: "readme",
-      message: "Updating README.md...",
-    });
-    if (readmeIndex > -1) {
-      const readmeFileObject = sanitizedFileStructure[readmeIndex];
-      const encodedReadmeString = Buffer.from(
-        readmeFileObject.content
-      ).toString("base64");
-      const { data: currentReadme } = await octokit.rest.repos.getContent({
-        owner: repoCreationResponse.data.owner.login,
-        repo: repoCreationResponse.data.name,
-        path: "README.md",
-      });
-      await octokit.rest.repos.createOrUpdateFileContents({
-        owner: repoCreationResponse.data.owner.login,
-        repo: repoCreationResponse.data.name,
-        path: "README.md",
-        message: "Update README.md from Project Diary",
-        content: encodedReadmeString,
-        sha: currentReadme.sha,
-        branch: "main",
-      });
-      console.log("README.md file successfully updated.");
-    }
-
-    const otherFiles = sanitizedFileStructure.filter(
-      (file) => file.path.toLowerCase() !== "readme.md"
-    );
-    if (otherFiles.length > 0) {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      await sendProgressUpdate(callbackURL, {
-        step: "files",
-        message: "Uploading project files...",
-      });
-      await repoGenerator(
-        octokit,
-        otherFiles,
-        repoCreationResponse.data.owner.login,
-        repoCreationResponse.data.name
-      );
-      console.log("All other files added successfully.");
-    }
-
-    await sendProgressUpdate(callbackURL, {
-      status: "done",
-      message: "Success! Repository created.",
-      redirectUrl: "/home",
-      successFlash: "Successfully created GitHub repository!",
-    });
+    runOrchestrator(userId, postId, jobId, packType, callbackURL);
   } catch (error) {
-    console.error("!!! A FATAL ERROR OCCURRED IN THE WORKER PROCESS !!!");
-    console.error("Error Message:", error.message);
-
-    await sendProgressUpdate(callbackURL, {
-      status: "error",
-      message: `An error occurred: ${
-        error.message || "Unknown error. Please check server logs."
-      }`,
-    });
+    console.error(
+      "FATAL: Failed to create a new job in the database:",
+      error.message
+    );
+    res
+      .status(500)
+      .json({
+        message:
+          "Could not start the generation process due to a server error.",
+      });
   }
 });
 
@@ -426,14 +243,13 @@ app.post("/add", async (req, res) => {
   try {
     const { name, title, description, tech_used, pack, userId } = req.body;
     const result = await db.query(
-      "INSERT INTO post(name, title, description, tech_used, pack, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *", [
-        name, title ,description, tech_used, pack, userId
-      ]
+      "INSERT INTO post(name, title, description, tech_used, pack, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+      [name, title, description, tech_used, pack, userId]
     );
     res.status(202).json(result.rows[0]);
   } catch (error) {
     console.err("API Error in POST /add", error);
-    res.status(500).json({message: "Failed to create project"})
+    res.status(500).json({ message: "Failed to create project" });
   }
 });
 

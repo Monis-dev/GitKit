@@ -12,6 +12,8 @@
   "description": "",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@langchain/core": "^0.3.78",
+    "@langchain/google-genai": "^0.2.18",
     "@octokit/rest": "^22.0.0",
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
