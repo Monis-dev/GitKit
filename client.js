@@ -135,7 +135,7 @@ app.get(
 app.get(
   "/auth/github",
   passport.authenticate("github", {
-    scope: ["profile", "email"],
+    scope: ["profile", "email", "repo"],
   })
 );
 
@@ -207,14 +207,13 @@ app.post("/api/home", async (req, res) => {
   try {
     const name = req.user.username;
     console.log(name)
-    const { title, description, tech_used, pack } = req.body;
+    const { title, description, tech_used } = req.body;
     const userId = req.user.id;
     const response = await axios.post(`${API_URL}/add`, {
       name: name,
       title: title,
       description: description,
       tech_used: tech_used,
-      pack: pack.toLowerCase(),
       userId: userId,
     });
     req.flash("success", "Project idea saved!");

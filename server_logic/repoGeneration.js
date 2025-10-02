@@ -78,7 +78,7 @@ export async function createAndPushToRepo(
   });
   const repoCreationResponse = await octokit.request("POST /user/repos", {
     name: repoName,
-    description: postDetails.description,
+    description: postDetails.description.substring(0, 350),
     private: true,
     auto_init: true,
   });

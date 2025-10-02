@@ -243,8 +243,8 @@ app.post("/add", async (req, res) => {
   try {
     const { name, title, description, tech_used, pack, userId } = req.body;
     const result = await db.query(
-      "INSERT INTO post(name, title, description, tech_used, pack, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-      [name, title, description, tech_used, pack, userId]
+      "INSERT INTO post(name, title, description, tech_used, user_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [name, title, description, tech_used, userId]
     );
     res.status(202).json(result.rows[0]);
   } catch (error) {
