@@ -120,12 +120,12 @@ This ensures each codebase is **consistent, maintainable, and error-free**.
 
 | Component | Technology |
 |------------|-------------|
-| **Frontend** | Next.js / React / Tailwind CSS |
+| **Frontend** | EJS / HTML / CSS / Bootstrap |
 | **Backend** | Node.js / Express.js |
 | **AI Core** | Gemini API (Google Generative AI) |
 | **Validation** | ESLint / Custom Lint Rules |
-| **Deployment** | GitHub REST API / GitHub Actions |
-| **Storage** | MongoDB (User preferences & project metadata) |
+| **Deployment** | GitHub REST API / GitHub Actions/ Octokit |
+| **Storage** | Postgre SQL |
 
 ---
 
